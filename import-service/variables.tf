@@ -32,8 +32,11 @@ variable "terra_google_project" {
 
 variable "owner" {
   description = "Environment or developer"
-  default = terraform.workspace
 }
+locals {
+  owner = var.owner == "" ? terraform.workspace : var.owner
+}
+
 variable "service" {
   description = "App name"
   default = "importservice"
