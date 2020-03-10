@@ -1,0 +1,5 @@
+env = "dev"
+import_service_google_project = "terra-importservice-dev"
+terra_google_project = "broad-dsde-dev"
+audience_domain = "dev.test.firecloud.org"
+rawls_sa_email = "806222273987-ksinuueghug8u81i36lq8aof266q19hl@developer.gserviceaccount.com"
