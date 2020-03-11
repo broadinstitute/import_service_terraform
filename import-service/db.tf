@@ -10,8 +10,8 @@ module "mysql" {
   source        = "github.com/broadinstitute/terraform-shared.git//terraform-modules/cloudsql-mysql"
 
   providers = {
-    google.target =  "google",
-    google.dns =  "google.dns"
+    google.target =  google.target,
+    google.dns =  google.target
   }
   project       = var.import_service_google_project
   cloudsql_name = "import-service-db"

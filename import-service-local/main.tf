@@ -1,4 +1,5 @@
 module "import-service" {
+  # TODO reference local path here
   source = "github.com/broadinstitute/import_service_terraform.git//import-service?ref=wip"
 
   env = var.env
