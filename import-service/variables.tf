@@ -72,7 +72,7 @@ variable "vault_path" {
   default = ""
 }
 locals {
-  vault_path = var.vault_path ? "${terraform.workspace}/import-service" : var.vault_path
+  vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
 }
 
 #

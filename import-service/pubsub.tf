@@ -13,9 +13,9 @@ resource "google_pubsub_subscription" "import-service-pubsub-subscription" {
   push_config {
     push_endpoint = "http://import-service-dot-broad-dsde-dev.appspot.com/_ah/push-handlers/receive_messages?token=${random_uuid.pubsub-secret-token.result}"
 
-    oidc_token = {
-      "service_account_email" = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
-      "audience" = "importservice.${var.audience_domain}"
+    oidc_token {
+      service_account_email = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+      audience = "importservice.${var.audience_domain}"
     }
 
     attributes = {

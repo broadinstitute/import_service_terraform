@@ -14,7 +14,7 @@ module "import-service-project" {
   service_accounts_to_create_with_keys = [
     {
       sa_name = "import-service"
-      key_vault_path = "${vault_root}/${vault_path}/import-service-account.json"
+      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
     }
   ]
   roles_to_grant_by_email_and_type = []
@@ -29,9 +29,9 @@ module "import-service-project" {
   }]
 }
 
+# Give the GCP compute SA permission to send pubsub messages as the import service SA
 resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_import_sa" {
-  service_account_id = "import-service@${module.import-service-project.project_name}.gserviceaccount.com"
-  member = "serviceAccount:${module.import-service-project.number}@cloudservices.gserviceaccount.com"
+  service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+  member = "serviceAccount:${module.import-service-project.project_number}@cloudservices.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
-  description = "Give the GCP compute SA permission to send pubsub messages as the import service SA"
 }
