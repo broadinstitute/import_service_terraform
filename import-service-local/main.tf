@@ -10,7 +10,7 @@ module "import-service" {
   audience_domain = var.audience_domain
   rawls_sa_email = var.rawls_sa_email
 
-  providers {
+  providers = {
     google.target = google
     google-beta.target = google-beta
   }
