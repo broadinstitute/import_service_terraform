@@ -8,11 +8,11 @@ variable dependencies {
 #
 # General Vars
 #
-variable env {}
+variable "env" {}
 
-variable audience_domain {}
+variable "audience_domain" {}
 
-variable rawls_sa_email {}
+variable "rawls_sa_email" {}
 
 variable "import_service_google_project" {
   description = "The google project that import service will run in"
@@ -26,13 +26,10 @@ variable "billing_account_id" {
   description = "The billing account ID to associate with the import service project"
 }
 
-variable "terra_google_project" {
-  description = "The google project that Terra monolithic apps run in"
-}
-
 variable "owner" {
   description = "Environment or developer"
 }
+
 locals {
   owner = var.owner == "" ? terraform.workspace : var.owner
 }
@@ -102,11 +99,4 @@ variable "gcp_compute_sa_roles_on_import_sa" {
     "roles/iam.serviceAccountTokenCreator"
   ]
   description = "Roles to give the GCP compute SA on the import service SA"
-}
-
-#
-# Firewall vars
-#
-variable "firewall_ip_range" {
-  description = "IP ranges for firewall around GAE"
 }

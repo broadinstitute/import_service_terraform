@@ -8,13 +8,7 @@ provider "google-beta" {
 
 provider "vault" {
   address = var.vault_addr
-  auth_login {
-    path = "auth/approle/login"
-    parameters = {
-      role_id = var.approle_role_id
-      secret_id = var.approle_secret_id
-    }
-  }
+# vault auths through ~/.vault-token when run locally
 }
 
 terraform {

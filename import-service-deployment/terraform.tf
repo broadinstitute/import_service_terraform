@@ -1,11 +1,11 @@
 provider "google" {
-  project = var.google_project
+  project = var.terraform_google_project
   region  = "us-central1"
   credentials = file("/var/secrets/atlantis-sa/atlantis-sa.json")
 }
 
 provider "google-beta" {
-  project = var.google_project
+  project = var.terraform_google_project
   region  = "us-central1"
   credentials = file("/var/secrets/atlantis-sa/atlantis-sa.json")
 }
