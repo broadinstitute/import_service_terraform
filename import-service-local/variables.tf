@@ -5,6 +5,10 @@ variable "vault_addr" {
   default = "https://clotho.broadinstitute.org:8200"
 }
 
+variable "vault_path" {
+  default = ""
+}
+
 variable "env" {}
 
 variable "audience_domain" {}

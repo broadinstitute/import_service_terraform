@@ -1,5 +1,4 @@
 module "import-service" {
-  # TODO reference local path here
   source = "../import-service"
 
   env = var.env
@@ -10,6 +9,8 @@ module "import-service" {
 
   audience_domain = var.audience_domain
   rawls_sa_email = var.rawls_sa_email
+
+  vault_path = var.vault_path
 
   providers = {
     google.target = google

@@ -13,7 +13,7 @@ module "mysql" {
     google.target =  google.target,
     google.dns =  google.target
   }
-  project       = var.import_service_google_project
+  project       = module.import-service-project.project_name
   cloudsql_name = "import-service-db"
   cloudsql_database_name = "isvc"
   cloudsql_database_user_name = "isvc"

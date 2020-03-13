@@ -30,10 +30,6 @@ variable "owner" {
   description = "Environment or developer"
 }
 
-locals {
-  owner = var.owner == "" ? terraform.workspace : var.owner
-}
-
 variable "service" {
   description = "App name"
   default = "importservice"
@@ -71,7 +67,9 @@ variable "vault_path" {
   description = "Vault path suffix for secrets in this deployment"
   default = ""
 }
+
 locals {
+  owner = var.owner == "" ? terraform.workspace : var.owner
   vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
 }
 

@@ -15,5 +15,5 @@ resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bu
 resource "google_storage_default_object_access_control" "rawls_reads_batchupsert_bucket_objects" {
   bucket = google_storage_bucket.batchupsert_bucket.name
   role = "READER"
-  entity = var.rawls_sa_email
+  entity = "user-${var.rawls_sa_email}"
 }
