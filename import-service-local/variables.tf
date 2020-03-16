@@ -15,6 +15,10 @@ variable "audience_domain" {}
 
 variable "rawls_sa_email" {}
 
+variable "rawls_google_project" {
+  description = "The google project that rawls runs in"
+}
+
 variable "import_service_google_project" {
   description = "The google project that import service will run in"
 }

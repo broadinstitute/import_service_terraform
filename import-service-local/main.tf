@@ -9,6 +9,7 @@ module "import-service" {
 
   audience_domain = var.audience_domain
   rawls_sa_email = var.rawls_sa_email
+  rawls_google_project = var.rawls_google_project
 
   vault_path = var.vault_path
 

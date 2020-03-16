@@ -14,6 +14,12 @@ variable "audience_domain" {}
 
 variable "rawls_sa_email" {}
 
+variable "rawls_google_project" {}
+
+variable "rawls_import_pubsub_topic" {
+  default = "rawls-async-import-topic"
+}
+
 variable "import_service_google_project" {
   description = "The google project that import service will run in"
 }

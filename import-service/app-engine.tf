@@ -5,13 +5,14 @@ resource "google_app_engine_application" "gae_import_service" {
 }
 
 # firewall rules that allow broad ips to access GAE
-resource "google_app_engine_firewall_rule" "gae_firewall" {
-  count = length(var.broad_range_cidrs)
-  project      = google_app_engine_application.gae_import_service.project
-  priority     = 1000 + count.index
-  action       = "ALLOW"
-  source_range = element(var.broad_range_cidrs, count.index)
-}
+# This doesn't work, see https://github.com/terraform-providers/terraform-provider-google/issues/5681
+#resource "google_app_engine_firewall_rule" "gae_firewall" {
+#  count = length(var.broad_range_cidrs)
+#  project      = google_app_engine_application.gae_import_service.project
+#  priority     = 1000 + count.index
+#  action       = "ALLOW"
+#  source_range = element(var.broad_range_cidrs, count.index)
+#}
 
 # default-deny firewall rule
 resource "google_app_engine_firewall_rule" "gae_firewall_default" {
