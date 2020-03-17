@@ -10,11 +10,15 @@ variable dependencies {
 #
 variable "env" {}
 
+variable "bucket_suffix" {}
+
 variable "audience_domain" {}
 
 variable "rawls_sa_email" {}
 
-variable "rawls_google_project" {}
+variable "sam_sa_email" {}
+
+variable "terra_google_project" {}
 
 variable "rawls_import_pubsub_topic" {
   default = "rawls-async-import-topic"
@@ -30,10 +34,6 @@ variable "import_service_google_project_folder_id" {
 
 variable "billing_account_id" {
   description = "The billing account ID to associate with the import service project"
-}
-
-variable "owner" {
-  description = "Environment or developer"
 }
 
 variable "service" {
@@ -75,8 +75,8 @@ variable "vault_path" {
 }
 
 locals {
-  owner = var.owner == "" ? terraform.workspace : var.owner
   vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
+  bucket_suffix = var.bucket_suffix == "" ? var.env : var.bucket_suffix
 }
 
 #

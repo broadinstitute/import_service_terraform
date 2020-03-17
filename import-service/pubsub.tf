@@ -16,18 +16,18 @@ resource "google_pubsub_subscription" "import-service-pubsub-subscription" {
     push_endpoint = "https://${google_app_engine_application.gae_import_service.default_hostname}/_ah/push-handlers/receive_messages?token=${random_uuid.pubsub-secret-token.result}"
 
     oidc_token {
-      service_account_email = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+      service_account_email = "${local.import_service_sa_email}"
       audience = "importservice.${var.audience_domain}"
     }
   }
 }
 
 # import service can publish to its own topic
-resource "google_pubsub_topic_iam_member" "rawls_can_publish" {
+resource "google_pubsub_topic_iam_member" "importservice_can_publish" {
   project = module.import-service-project.project_name
   topic = google_pubsub_topic.import-service-pubsub-topic.name
   role = "roles/pubsub.publisher"
-  member = "serviceAccount:import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+  member = "serviceAccount:${local.import_service_sa_email}"
 }
 
 # rawls can publish to import service's topic
@@ -35,13 +35,13 @@ resource "google_pubsub_topic_iam_member" "rawls_can_publish" {
   project = module.import-service-project.project_name
   topic = google_pubsub_topic.import-service-pubsub-topic.name
   role = "roles/pubsub.publisher"
-  member = "serviceAccount:import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+  member = "serviceAccount:${local.import_service_sa_email}"
 }
 
 # import service can publish to rawls' topic
 resource "google_pubsub_topic_iam_member" "importservice_publish_to_rawls" {
-  project = var.rawls_google_project
+  project = var.terra_google_project
   topic = var.rawls_import_pubsub_topic
   role = "roles/pubsub.publisher"
-  member = "serviceAccount:import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+  member = "serviceAccount:${local.import_service_sa_email}"
 }

@@ -11,12 +11,16 @@ variable "vault_path" {
 
 variable "env" {}
 
+variable "bucket_suffix" {}
+
 variable "audience_domain" {}
 
 variable "rawls_sa_email" {}
 
-variable "rawls_google_project" {
-  description = "The google project that rawls runs in"
+variable "sam_sa_email" {}
+
+variable "terra_google_project" {
+  description = "The google project that terra monolithic services run in"
 }
 
 variable "import_service_google_project" {
@@ -29,10 +33,6 @@ variable "import_service_google_project_folder_id" {
 
 variable "billing_account_id" {
   description = "The billing account ID to associate with the import service project"
-}
-
-variable "owner" {
-  description = "Environment or developer"
 }
 
 variable "terraform_google_project" {}

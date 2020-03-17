@@ -29,9 +29,13 @@ module "import-service-project" {
   }]
 }
 
+locals {
+  import_service_sa_email = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+}
+
 # Give the GCP compute SA permission to send pubsub messages as the import service SA
 resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_import_sa" {
-  service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
+  service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = "serviceAccount:${module.import-service-project.project_number}@cloudservices.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
 }

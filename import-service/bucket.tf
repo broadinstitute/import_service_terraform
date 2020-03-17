@@ -1,5 +1,5 @@
 resource "google_storage_bucket" "batchupsert_bucket" {
-  name = "import-service-batchupsert-${var.env}"
+  name = "import-service-batchupsert-${local.bucket_suffix}"
   project = module.import-service-project.project_name
   location = "US"
 }
@@ -8,7 +8,7 @@ resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bu
   bucket = google_storage_bucket.batchupsert_bucket.name
   role = "roles/storage.admin"
   members = [
-      "serviceAccount:import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com",
+      "serviceAccount:${local.import_service_sa_email}",
   ]
 }
 
