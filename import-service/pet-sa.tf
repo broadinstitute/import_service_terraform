@@ -10,6 +10,6 @@ data "google_service_account_access_token" "sam_access_token" {
 
 resource "null_resource" "import_service_can_get_pets" {
   provisioner "local-exec" {
-    command = "./add-import-service-sa-to-sam.sh ${var.env} ${data.google_service_account_access_token.sam_access_token.access_token} ${local.import_service_sa_email}"
+    command = "./../import-service/add-import-service-sa-to-sam.sh ${var.env} ${data.google_service_account_access_token.sam_access_token.access_token} ${local.import_service_sa_email} ${data.google_service_account_access_token.import_service_token.access_token}"
   }
 }

@@ -39,3 +39,35 @@ resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_impo
   member = "serviceAccount:${module.import-service-project.project_number}@cloudservices.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
 }
+
+# This next section is about granting the Terraform SA permission to impersonate the import service SA. This is needed
+# to reference the import service SA with Sam. There's no way I can find of getting the Terraform SA email address,
+# so we take their token, pass it to Google's tokeninfo, and extract it from there.
+data "google_client_config" "terraform_sa" {}
+
+data "http" "terraform_sa_tokeninfo" {
+  url = "https://oauth2.googleapis.com/tokeninfo?access_token=${data.google_client_config.terraform_sa.access_token}"
+  request_headers = {
+    Accept = "application/json"
+  }
+}
+
+locals {
+  terraform_sa_email = jsondecode(data.http.terraform_sa_tokeninfo.body)["email"]
+  terraform_sa_email_is_sa = length(regexall("\\.gserviceaccount\\.com$", local.terraform_sa_email)) > 0
+}
+
+resource "google_service_account_iam_member" "grant_self_token_creator_on_import_sa" {
+  service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
+  member = local.terraform_sa_email_is_sa ? "serviceAccount:${local.terraform_sa_email}" : "user:${local.terraform_sa_email}"
+  role = "roles/iam.serviceAccountTokenCreator"
+}
+
+data "google_service_account_access_token" "import_service_token" {
+  depends_on = ["google_service_account_iam_member.grant_self_token_creator_on_import_sa"]
+  provider               = google
+  target_service_account = local.import_service_sa_email
+  scopes                 = ["https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email"]
+  lifetime               = "300s"
+}
