@@ -9,7 +9,8 @@ module "import-service-project" {
     "monitoring.googleapis.com",
     "appengine.googleapis.com",
     "pubsub.googleapis.com",
-    "storage-component.googleapis.com"
+    "storage-component.googleapis.com",
+    "iamcredentials.googleapis.com"
   ]
   service_accounts_to_create_with_keys = [
     {
@@ -33,10 +34,10 @@ locals {
   import_service_sa_email = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
 }
 
-# Give the GCP compute SA permission to send pubsub messages as the import service SA
+# Give the GCP pubsub SA permission to send pubsub messages as the import service SA
 resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_import_sa" {
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
-  member = "serviceAccount:${module.import-service-project.project_number}@cloudservices.gserviceaccount.com"
+  member = "serviceAccount:service-${module.import-service-project.project_number}@gcp-sa-pubsub.iam.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
 }
 
@@ -60,6 +61,12 @@ locals {
 resource "google_service_account_iam_member" "grant_self_token_creator_on_import_sa" {
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = local.terraform_sa_email_is_sa ? "serviceAccount:${local.terraform_sa_email}" : "user:${local.terraform_sa_email}"
+  role = "roles/iam.serviceAccountTokenCreator"
+}
+
+resource "google_service_account_iam_member" "grant_appengine_token_creator_on_import_sa" {
+  service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
+  member = "serviceAccount:${module.import-service-project.project_name}@appspot.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
 }
 

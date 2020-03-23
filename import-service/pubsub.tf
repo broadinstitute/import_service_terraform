@@ -12,6 +12,10 @@ resource "google_pubsub_subscription" "import-service-pubsub-subscription" {
 
   ack_deadline_seconds = 600
 
+  expiration_policy {
+    ttl = ""
+  }
+
   push_config {
     push_endpoint = "https://${google_app_engine_application.gae_import_service.default_hostname}/_ah/push-handlers/receive_messages?token=${random_uuid.pubsub-secret-token.result}"
 
@@ -41,7 +45,7 @@ resource "google_pubsub_topic_iam_member" "rawls_can_publish" {
 # import service can publish to rawls' topic
 resource "google_pubsub_topic_iam_member" "importservice_publish_to_rawls" {
   project = var.terra_google_project
-  topic = var.rawls_import_pubsub_topic
+  topic = local.rawls_import_pubsub_topic
   role = "roles/pubsub.publisher"
   member = "serviceAccount:${local.import_service_sa_email}"
 }

@@ -20,8 +20,8 @@ variable "sam_sa_email" {}
 
 variable "terra_google_project" {}
 
-variable "rawls_import_pubsub_topic" {
-  default = "rawls-async-import-topic"
+locals {
+  rawls_import_pubsub_topic = "rawls-async-import-topic-${var.env}"
 }
 
 variable "import_service_google_project" {

@@ -19,3 +19,7 @@ module "import-service" {
     google-beta.target = google-beta
   }
 }
+
+output "ATTENTION" {
+  value = module.import-service.ATTENTION
+}

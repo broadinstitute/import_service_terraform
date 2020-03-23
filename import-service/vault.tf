@@ -29,3 +29,13 @@ resource "vault_generic_secret" "pubsub-token" {
 }
 EOT
 }
+
+resource "vault_generic_secret" "app-database-instance-name" {
+  path = "${var.vault_root}/${local.vault_path}/mysql/instance_details"
+
+  data_json = <<EOT
+  {
+  "instance_name": "${module.mysql.cloudsql-instance-name}"
+}
+EOT
+}
