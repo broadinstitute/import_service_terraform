@@ -18,7 +18,13 @@ module "import-service-project" {
       key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
     }
   ]
-  roles_to_grant_by_email_and_type = []
+
+  roles_to_grant_by_email_and_type = [{
+    email = local.terraform_sa_email
+    role = "roles/iam.serviceAccountTokenCreator"
+    id_type = local.terraform_sa_email_is_sa ? "serviceAccount" : "user"
+  }]
+
   service_accounts_to_grant_by_name_and_project = [{
     sa_role = "roles/pubsub.admin"
     sa_name = "import-service"
@@ -39,6 +45,7 @@ resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_impo
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = "serviceAccount:service-${module.import-service-project.project_number}@gcp-sa-pubsub.iam.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
+  depends_on = [module.import-service-project]
 }
 
 # This next section is about granting the Terraform SA permission to impersonate the import service SA. This is needed
@@ -62,16 +69,18 @@ resource "google_service_account_iam_member" "grant_self_token_creator_on_import
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = local.terraform_sa_email_is_sa ? "serviceAccount:${local.terraform_sa_email}" : "user:${local.terraform_sa_email}"
   role = "roles/iam.serviceAccountTokenCreator"
+  depends_on = [module.import-service-project]
 }
 
 resource "google_service_account_iam_member" "grant_appengine_token_creator_on_import_sa" {
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = "serviceAccount:${module.import-service-project.project_name}@appspot.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
+  depends_on = [module.import-service-project]
 }
 
 data "google_service_account_access_token" "import_service_token" {
-  depends_on = ["google_service_account_iam_member.grant_self_token_creator_on_import_sa"]
+  depends_on = [google_service_account_iam_member.grant_self_token_creator_on_import_sa]
   provider               = google
   target_service_account = local.import_service_sa_email
   scopes                 = ["https://www.googleapis.com/auth/userinfo.profile",

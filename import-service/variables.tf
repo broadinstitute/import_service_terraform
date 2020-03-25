@@ -47,7 +47,7 @@ variable "service" {
 
 # sourced from https://docs.google.com/document/d/1AzTX93P35r2alE4-pviPWf-1LRBWVAF-BwrYKVVpzWo/edit
 variable "broad_range_cidrs" {
-  type    = "list"
+  type    = list(string)
   default = [ "69.173.64.0/19",
     "69.173.96.0/20",
     "69.173.112.0/21",

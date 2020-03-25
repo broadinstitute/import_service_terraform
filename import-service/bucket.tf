@@ -10,6 +10,7 @@ resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bu
   members = [
       "serviceAccount:${local.import_service_sa_email}",
   ]
+  depends_on = [module.import-service-project.service_accounts_with_keys]
 }
 
 # Note that default object ACLs aren't visible in cloud console.
