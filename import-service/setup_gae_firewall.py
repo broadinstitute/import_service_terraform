@@ -59,6 +59,15 @@ for rule in json.loads(res.stdout):
         res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
         check_error(res, "Error deleting firewall rule, exiting")
 
+
+def add_gae_firewall_rule(prio, range, description):
+    """Adds one firewall rule."""
+    print(f"Setting firewall rule ALLOW {range} {description} at priority {prio}")
+    cmd = f"gcloud --project {args.project} app firewall-rules create {prio} --action ALLOW --source-range {range} --description".split() + [description]
+    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+    check_error(res, f"Error adding firewall rule for {range} {description}, exiting")
+
+
 ###
 # Then re-add Broad firewall rules.
 ###
@@ -70,11 +79,7 @@ res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, enco
 check_error(res, "Error updating default firewall rule, exiting")
 
 for (idx, ip_range) in enumerate(broad_range_cidrs):
-    print(f"Setting firewall rule ALLOW {ip_range} at priority {1000 + idx}")
-    cmd = f'gcloud --project {args.project} app firewall-rules create {1000 + idx} --action ALLOW --source-range {ip_range} --description'.split() + ["Broad internal network"]
-    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
-
-    check_error(res, f"Error adding firewall rule for IP range {ip_range}, exiting")
+    add_gae_firewall_rule(1000 + idx, ip_range, "Broad internal network")
 
 ip_count = len(broad_range_cidrs)
 
@@ -106,11 +111,8 @@ if len(back_rawlses) != 1:
     sys.exit(1)
 
 rawls_inst_ips = get_gae_public_ips(back_rawlses)
-for (idx, inst_name) in enumerate(rawls_inst_ips):
-    print(f"Setting firewall rule ALLOW {rawls_inst_ips[inst_name]} {inst_name} at priority {1000 + ip_count + idx}")
-    cmd = f"gcloud --project {args.project} app firewall-rules create {1000 + ip_count + idx} --action ALLOW --source-range {rawls_inst_ips[inst_name]} --description {inst_name}".split()
-    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
-    check_error(res, f"Error adding firewall rule for {inst_name}, exiting")
+for (idx, rawls_inst) in enumerate(rawls_inst_ips):
+    add_gae_firewall_rule(1000 + ip_count + idx, rawls_inst_ips[rawls_inst], rawls_inst)
 
 ip_count += len(rawls_inst_ips)
 
@@ -129,8 +131,6 @@ orchestrations = json.loads(res.stdout)
 
 orch_inst_ips = get_gae_public_ips(orchestrations)
 for (idx, orch_inst) in enumerate(orch_inst_ips):
-    print(f"Setting firewall rule ALLOW {orch_inst_ips[orch_inst]} {orch_inst} at priority {1000 + ip_count + idx}")
-    cmd = f"gcloud --project {args.project} app firewall-rules create {1000 + ip_count + idx} --action ALLOW --source-range {orch_inst_ips[orch_inst]} --description {orch_inst}".split()
-    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
-    check_error(res, f"Error adding firewall rule for {orch_inst}, exiting")
+    add_gae_firewall_rule(1000 + ip_count + idx, orch_inst_ips[orch_inst], orch_inst)
+
 
