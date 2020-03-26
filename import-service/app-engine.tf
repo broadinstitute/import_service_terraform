@@ -30,6 +30,6 @@ output "ATTENTION" {
   value = <<EOF
 THIS PROFILE REQUIRES MANUAL STEPS!
 To run the manual steps run the script in the import-service directory:
-./setup_gae_firewall.py ${module.import-service-project.project_name}
+./setup_gae_firewall.py ${module.import-service-project.project_name} ${var.env}
 EOF
 }

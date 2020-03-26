@@ -3,17 +3,21 @@
 # This Python 3.5+ script is a workaround for Terraform's inability to reliably create Google App Engine firewall rules.
 # This is bugged here, and may be fixed: https://github.com/terraform-providers/terraform-provider-google/issues/5681
 
-# sourced from https://docs.google.com/document/d/1AzTX93P35r2alE4-pviPWf-1LRBWVAF-BwrYKVVpzWo/edit
-broad_range_cidrs = [ "69.173.64.0/19",
-            "69.173.96.0/20",
-            "69.173.112.0/21",
-            "69.173.120.0/22",
-            "69.173.124.0/23",
-            "69.173.126.0/24",
-            "69.173.127.0/25",
-            "69.173.127.128/26",
-            "69.173.127.192/27",
-            "69.173.127.240/28" ]
+# sourced from https://dsp-security.broadinstitute.org/platform-security-categories/google-cloud-platform/securing-the-network
+broad_range_cidrs = [ "69.173.112.0/21",
+                      "69.173.127.232/29",
+                      "69.173.127.128/26",
+                      "69.173.127.0/25",
+                      "69.173.127.240/28",
+                      "69.173.127.224/30",
+                      "69.173.127.230/31",
+                      "69.173.120.0/22",
+                      "69.173.127.228/32",
+                      "69.173.126.0/24",
+                      "69.173.96.0/20",
+                      "69.173.64.0/19",
+                      "69.173.127.192/27",
+                      "69.173.124.0/23" ]
 
 
 import argparse
@@ -23,8 +27,10 @@ import json
 
 
 parser = argparse.ArgumentParser(description="""Adds Broad Google App Engine firewall rules to the project given.
+Also adds Orch and back-Rawls instances in the corresponding environment.
 Will use your currently logged in gcloud credentials to do so.""")
 parser.add_argument("project", help="Google project in which to add the App Engine firewall rules.")
+parser.add_argument("env", help="Env shorthand, i.e. dev/alpha/staging/prod")
 args = parser.parse_args()
 
 
@@ -35,6 +41,9 @@ def check_error(res, msg):
         sys.exit(res.returncode)
 
 
+###
+# First, nuke all the firewall rules.
+###
 print(f"Listing all existing firewall rules on project {args.project} so we can delete them.")
 
 cmd = f"gcloud --project {args.project} app firewall-rules list --format=json".split()
@@ -50,6 +59,9 @@ for rule in json.loads(res.stdout):
         res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
         check_error(res, "Error deleting firewall rule, exiting")
 
+###
+# Then re-add Broad firewall rules.
+###
 print(f"\nSetting Broad firewall rules on project {args.project}.")
 
 print("Setting default firewall rule to DENY")
@@ -59,7 +71,66 @@ check_error(res, "Error updating default firewall rule, exiting")
 
 for (idx, ip_range) in enumerate(broad_range_cidrs):
     print(f"Setting firewall rule ALLOW {ip_range} at priority {1000 + idx}")
-    cmd = f"gcloud --project {args.project} app firewall-rules create {1000 + idx} --action ALLOW --source-range {ip_range}".split()
+    cmd = f'gcloud --project {args.project} app firewall-rules create {1000 + idx} --action ALLOW --source-range {ip_range} --description'.split() + ["Broad internal network"]
     res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
 
     check_error(res, f"Error adding firewall rule for IP range {ip_range}, exiting")
+
+ip_count = len(broad_range_cidrs)
+
+
+def get_gae_public_ips(gcloud_instances_list):
+    """Parses out the monstrous gcloud output into a dict of instance name -> IP.
+    For reference, gcloud returns a list of these: https://cloud.google.com/compute/docs/reference/rest/v1/instances"""
+    all_instance_nics = {inst["name"]:inst["networkInterfaces"] for inst in gcloud_instances_list}
+    return {inst:ac["natIP"]
+            for inst in all_instance_nics
+            for nic in all_instance_nics[inst]
+            for ac in nic["accessConfigs"]
+            if nic["kind"]=="compute#networkInterface" and ac["kind"]=="compute#accessConfig"}
+
+
+###
+# Add back-Rawls rules.
+###
+print(f"\nAdding firewall rule for back-rawls.")
+
+# List all the back-rawls instances so we can get their IPs. There should be only one.
+cmd = f'gcloud compute instances list'.split() + [f'--filter=name:gce-rawls-{args.env}* AND status:RUNNING AND tags.items=backend', '--format=json']
+res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+check_error(res, "Error finding back-rawls, exiting")
+
+back_rawlses = json.loads(res.stdout)
+if len(back_rawlses) != 1:
+    print(f"Found {len(back_rawlses)} back-rawlses, expecting 1")
+    sys.exit(1)
+
+rawls_inst_ips = get_gae_public_ips(back_rawlses)
+for (idx, inst_name) in enumerate(rawls_inst_ips):
+    print(f"Setting firewall rule ALLOW {rawls_inst_ips[inst_name]} {inst_name} at priority {1000 + ip_count + idx}")
+    cmd = f"gcloud --project {args.project} app firewall-rules create {1000 + ip_count + idx} --action ALLOW --source-range {rawls_inst_ips[inst_name]} --description {inst_name}".split()
+    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+    check_error(res, f"Error adding firewall rule for {inst_name}, exiting")
+
+ip_count += len(rawls_inst_ips)
+
+
+###
+# Add Orchestration rules.
+###
+print(f"\nAdding firewall rules for Orch instances.")
+
+# List all the orch instances. There will be many.
+cmd = f'gcloud compute instances list'.split() + [f'--filter=name:gce-firecloud-orchestration-{args.env}* AND status:RUNNING', '--format=json']
+res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+check_error(res, "Error finding orch instances, exiting")
+
+orchestrations = json.loads(res.stdout)
+
+orch_inst_ips = get_gae_public_ips(orchestrations)
+for (idx, orch_inst) in enumerate(orch_inst_ips):
+    print(f"Setting firewall rule ALLOW {orch_inst_ips[orch_inst]} {orch_inst} at priority {1000 + ip_count + idx}")
+    cmd = f"gcloud --project {args.project} app firewall-rules create {1000 + ip_count + idx} --action ALLOW --source-range {orch_inst_ips[orch_inst]} --description {orch_inst}".split()
+    res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+    check_error(res, f"Error adding firewall rule for {orch_inst}, exiting")
+
