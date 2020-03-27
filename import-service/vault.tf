@@ -3,7 +3,7 @@ resource "vault_generic_secret" "app-database-credentials" {
 
   data_json = <<EOT
 {
-  "username": "var.mysql_user",
+  "username": "${var.mysql_user}",
   "password": "${random_id.mysql-user-password.hex}"
 }
 EOT
