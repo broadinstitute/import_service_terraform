@@ -19,6 +19,10 @@ broad_range_cidrs = [ "69.173.112.0/21",
                       "69.173.127.192/27",
                       "69.173.124.0/23" ]
 
+# Pub/Sub doesn't publish their IP ranges, I found this on SO and verified experimentally:
+# https://stackoverflow.com/a/51323548/2941784
+PUBSUB_IP_RANGE = "2002:a00::/24"
+
 
 import argparse
 import sys
@@ -83,6 +87,14 @@ for (idx, ip_range) in enumerate(broad_range_cidrs):
 
 ip_count = len(broad_range_cidrs)
 
+###
+# Add rule to let Pub/Sub traffic through.
+###
+print(f"\nSetting Pub/Sub firewall rule.")
+add_gae_firewall_rule(1000 + ip_count, PUBSUB_IP_RANGE, "GCP Pub/Sub")
+
+ip_count += 1
+
 
 def get_gae_public_ips(gcloud_instances_list):
     """Parses out the monstrous gcloud output into a dict of instance name -> IP.
@@ -101,7 +113,7 @@ def get_gae_public_ips(gcloud_instances_list):
 print(f"\nAdding firewall rule for back-rawls.")
 
 # List all the back-rawls instances so we can get their IPs. There should be only one.
-cmd = f'gcloud compute instances list'.split() + [f'--filter=name:gce-rawls-{args.env}* AND status:RUNNING AND tags.items=backend', '--format=json']
+cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-rawls-{args.env}* AND status:RUNNING AND tags.items=backend', '--format=json']
 res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
 check_error(res, "Error finding back-rawls, exiting")
 
@@ -123,7 +135,7 @@ ip_count += len(rawls_inst_ips)
 print(f"\nAdding firewall rules for Orch instances.")
 
 # List all the orch instances. There will be many.
-cmd = f'gcloud compute instances list'.split() + [f'--filter=name:gce-firecloud-orchestration-{args.env}* AND status:RUNNING', '--format=json']
+cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-firecloud-orchestration-{args.env}* AND status:RUNNING', '--format=json']
 res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
 check_error(res, "Error finding orch instances, exiting")
 
