@@ -1,5 +1,5 @@
 module "import-service-project" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google_project_number"
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-0.0.2-tf-0.12"
 
   project_name = var.import_service_google_project
   folder_id = var.import_service_google_project_folder_id
