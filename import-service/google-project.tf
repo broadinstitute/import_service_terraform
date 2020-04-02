@@ -36,8 +36,7 @@ module "import-service-project" {
   }]
 
   providers = {
-    google.target = google
-    google-beta.target = google-beta
+    google.target = google.target
     vault = vault
   }
 }
