@@ -21,5 +21,5 @@ Your .tfvars MAY contain the following, if you want to override the defaults dur
 **variable**|**default**|**description**
 -----|-----|------
 `import_service_google_project` | `terra-importservice-{var.env}` | The Google project to create
-`bucket_suffix` | `{var.env}` | Creates the import service batchUpsert bucket, `importservice-batchupsert-{bucket_suffix}`
+`bucket_suffix` | `{var.env}` | Creates the import service batchUpsert bucket, `import-service-batchupsert-{bucket_suffix}`
 `vault_path` | `{var.env}/import-service` | Vault secrets will be published in `secret/dsde/firecloud/{vault_path}`
