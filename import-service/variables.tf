@@ -77,6 +77,7 @@ variable "vault_path" {
 locals {
   vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
   bucket_suffix = var.bucket_suffix == "" ? var.env : var.bucket_suffix
+  import_service_google_project = var.import_service_google_project == "" ? "import-service-${var.env}" : var.import_service_google_project
 }
 
 #
