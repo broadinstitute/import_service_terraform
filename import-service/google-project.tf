@@ -34,6 +34,12 @@ module "import-service-project" {
     sa_name = "import-service"
     sa_project = "" // defaults to the created project
   }]
+
+  providers = {
+    google.target = google
+    google-beta.target = google-beta
+    vault = vault
+  }
 }
 
 locals {
