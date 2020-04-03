@@ -81,7 +81,7 @@ resource "google_service_account_iam_member" "grant_appengine_token_creator_on_i
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = "serviceAccount:${module.import-service-project.project_name}@appspot.gserviceaccount.com"
   role = "roles/iam.serviceAccountTokenCreator"
-  depends_on = [module.import-service-project]
+  depends_on = [module.import-service-project, google_app_engine_application.gae_import_service]
 }
 
 data "google_service_account_access_token" "import_service_token" {
