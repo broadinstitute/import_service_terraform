@@ -6,7 +6,7 @@ resource "google_app_engine_application" "gae_import_service" {
 
 # firewall rules that allow broad ips to access GAE
 # FIXME This doesn't work, see https://github.com/terraform-providers/terraform-provider-google/issues/5681
-# The ATTENTION output below and associated script is the workaround for the time being.
+# The ATTENTION output in output.tf and associated script is the workaround for the time being.
 #resource "google_app_engine_firewall_rule" "gae_firewall" {
 #  count = length(var.broad_range_cidrs)
 #  project      = google_app_engine_application.gae_import_service.project
@@ -25,11 +25,3 @@ resource "google_app_engine_application" "gae_import_service" {
 #  action       = "DENY"
 #  source_range = "*"
 #}
-
-output "ATTENTION" {
-  value = <<EOF
-THIS PROFILE REQUIRES MANUAL STEPS!
-To run the manual steps run the script in the import-service directory:
-./setup_gae_firewall.py ${module.import-service-project.project_name} ${var.env}
-EOF
-}
