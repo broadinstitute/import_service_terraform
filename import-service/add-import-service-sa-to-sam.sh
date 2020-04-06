@@ -17,7 +17,7 @@ fi
 
 curl -f -H "content-type: application/json" -H "Authorization: bearer $SAM_TOKEN" "https://sam.dsde-$ENV.broadinstitute.org/api/resource/cloud-extension/google/policies/fc-service-accounts" > current_policy.json
 
-jq ".memberEmails += [\"$IMPORT_SERVICE_SA\"]" current_policy.json > new_policy.json
+./add_to_sam_policy_members.py "$IMPORT_SERVICE_SA" current_policy.json new_policy.json
 
 UPDATE_STATUS=$(curl -o /dev/null -w '%{http_code}' -H "content-type: application/json" -X PUT -H "Authorization: bearer $SAM_TOKEN" -d @new_policy.json "https://sam.dsde-$ENV.broadinstitute.org/api/resource/cloud-extension/google/policies/fc-service-accounts")
 
