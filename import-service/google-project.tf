@@ -84,8 +84,16 @@ resource "google_service_account_iam_member" "grant_appengine_token_creator_on_i
   depends_on = [module.import-service-project, google_app_engine_application.gae_import_service]
 }
 
-data "google_service_account_access_token" "import_service_token" {
+# Google IAM is a bit "eventually" so add a sleep between granting token creator and retrieving the token.
+resource "null_resource" "delay_before_getting_import_service_token" {
   depends_on = [google_service_account_iam_member.grant_self_token_creator_on_import_sa]
+  provisioner "local-exec" {
+    command = "sleep 60"
+  }
+}
+
+data "google_service_account_access_token" "import_service_token" {
+  depends_on = [null_resource.delay_before_getting_import_service_token]
   provider               = google
   target_service_account = local.import_service_sa_email
   scopes                 = ["https://www.googleapis.com/auth/userinfo.profile",
