@@ -92,6 +92,8 @@ resource "null_resource" "delay_before_getting_import_service_token" {
   }
 }
 
+# NOTE: It is possible that you will get a 403 here if the previous delay wasn't long enough.
+# If this happens, just rerun the terraform apply step and it should work.
 data "google_service_account_access_token" "import_service_token" {
   depends_on = [null_resource.delay_before_getting_import_service_token]
   provider               = google
