@@ -46,7 +46,49 @@ def check_error(res, msg):
 
 
 ###
-# First, nuke all the firewall rules.
+# Look up the Rawls and Orch IPs. We'll use these to generate the new firewall rules.
+# We do this first so that any errors here don't break the script with the firewall rules mid-change.
+###
+
+def get_gae_public_ips(gcloud_instances_list):
+    """Parses out the monstrous gcloud output into a dict of instance name -> IP.
+    For reference, gcloud returns a list of these: https://cloud.google.com/compute/docs/reference/rest/v1/instances"""
+    all_instance_nics = {inst["name"]:inst["networkInterfaces"] for inst in gcloud_instances_list}
+    return {inst:ac["natIP"]
+            for inst in all_instance_nics
+            for nic in all_instance_nics[inst]
+            for ac in nic["accessConfigs"]
+            if nic["kind"]=="compute#networkInterface" and ac["kind"]=="compute#accessConfig"}
+
+
+print(f"Getting public IPs for back-rawls instances...")
+
+# List all the back-rawls instances so we can get their IPs. There should be only one.
+cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-rawls-{args.env}* AND status:RUNNING AND tags.items=backend', '--format=json']
+res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+check_error(res, "Error finding back-rawls, exiting")
+
+back_rawlses = json.loads(res.stdout)
+if len(back_rawlses) != 1:
+    print(f"Found {len(back_rawlses)} back-rawlses, expecting 1")
+    sys.exit(1)
+
+rawls_inst_ips = get_gae_public_ips(back_rawlses)
+
+print(f"Getting public IPs for orchestration instances...")
+
+# List all the orch instances. There will be many.
+cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-firecloud-orchestration-{args.env}* AND status:RUNNING', '--format=json']
+res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
+check_error(res, "Error finding orch instances, exiting")
+
+orchestrations = json.loads(res.stdout)
+
+orch_inst_ips = get_gae_public_ips(orchestrations)
+
+
+###
+# Nuke all the firewall rules.
 ###
 print(f"Listing all existing firewall rules on project {args.project} so we can delete them.")
 
@@ -96,33 +138,11 @@ add_gae_firewall_rule(1000 + ip_count, PUBSUB_IP_RANGE, "GCP Pub/Sub")
 ip_count += 1
 
 
-def get_gae_public_ips(gcloud_instances_list):
-    """Parses out the monstrous gcloud output into a dict of instance name -> IP.
-    For reference, gcloud returns a list of these: https://cloud.google.com/compute/docs/reference/rest/v1/instances"""
-    all_instance_nics = {inst["name"]:inst["networkInterfaces"] for inst in gcloud_instances_list}
-    return {inst:ac["natIP"]
-            for inst in all_instance_nics
-            for nic in all_instance_nics[inst]
-            for ac in nic["accessConfigs"]
-            if nic["kind"]=="compute#networkInterface" and ac["kind"]=="compute#accessConfig"}
-
-
 ###
 # Add back-Rawls rules.
 ###
 print(f"\nAdding firewall rule for back-rawls.")
 
-# List all the back-rawls instances so we can get their IPs. There should be only one.
-cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-rawls-{args.env}* AND status:RUNNING AND tags.items=backend', '--format=json']
-res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
-check_error(res, "Error finding back-rawls, exiting")
-
-back_rawlses = json.loads(res.stdout)
-if len(back_rawlses) != 1:
-    print(f"Found {len(back_rawlses)} back-rawlses, expecting 1")
-    sys.exit(1)
-
-rawls_inst_ips = get_gae_public_ips(back_rawlses)
 for (idx, rawls_inst) in enumerate(rawls_inst_ips):
     add_gae_firewall_rule(1000 + ip_count + idx, rawls_inst_ips[rawls_inst], rawls_inst)
 
@@ -133,15 +153,6 @@ ip_count += len(rawls_inst_ips)
 # Add Orchestration rules.
 ###
 print(f"\nAdding firewall rules for Orch instances.")
-
-# List all the orch instances. There will be many.
-cmd = f'gcloud --project broad-dsde-{args.env} compute instances list'.split() + [f'--filter=name:gce-firecloud-orchestration-{args.env}* AND status:RUNNING', '--format=json']
-res = subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
-check_error(res, "Error finding orch instances, exiting")
-
-orchestrations = json.loads(res.stdout)
-
-orch_inst_ips = get_gae_public_ips(orchestrations)
 for (idx, orch_inst) in enumerate(orch_inst_ips):
     add_gae_firewall_rule(1000 + ip_count + idx, orch_inst_ips[orch_inst], orch_inst)
 
