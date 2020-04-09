@@ -45,7 +45,7 @@ locals {
   import_service_sa_email = "import-service@${module.import-service-project.project_name}.iam.gserviceaccount.com"
 }
 
-# Give the GCP pubsub SA permission to send pubsub messages as the import service SA
+# Give the GCP pubsub SA permission to impersonate the import service SA, which it will use to send pubsub messages as the import service SA
 resource "google_service_account_iam_member" "grant_gcp_compute_sa_roles_on_import_sa" {
   service_account_id = "projects/${module.import-service-project.project_name}/serviceAccounts/${local.import_service_sa_email}"
   member = "serviceAccount:service-${module.import-service-project.project_number}@gcp-sa-pubsub.iam.gserviceaccount.com"
