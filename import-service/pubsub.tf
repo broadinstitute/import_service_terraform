@@ -1,6 +1,6 @@
 resource "google_pubsub_topic" "import-service-pubsub-topic" {
   project = module.import-service-project.project_name
-  name = "import-service-notify"
+  name = "import-service-notify-${var.env}"
 }
 
 resource "random_uuid" "pubsub-secret-token" {}
