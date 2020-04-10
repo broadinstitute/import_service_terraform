@@ -1,0 +1,13 @@
+version: 3
+projects:
+  - name: import-service
+    dir: import-service
+    workflow: import-service
+    workspace: gmalkov
+workflows:
+  import-service:
+    plan:
+      steps:
+        - init
+        - plan:
+            extra_args: ["-var-file", "dev.tfvars"]
