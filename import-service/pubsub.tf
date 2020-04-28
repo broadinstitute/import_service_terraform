@@ -39,7 +39,7 @@ resource "google_pubsub_topic_iam_member" "rawls_can_publish" {
   project = module.import-service-project.project_name
   topic = google_pubsub_topic.import-service-pubsub-topic.name
   role = "roles/pubsub.publisher"
-  member = "serviceAccount:${local.rawls_sa_email}"
+  member = "serviceAccount:${var.rawls_sa_email}"
 }
 
 # import service can publish to rawls' topic
