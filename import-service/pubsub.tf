@@ -17,7 +17,7 @@ resource "google_pubsub_subscription" "import-service-pubsub-subscription" {
   }
 
   push_config {
-    push_endpoint = "https://${google_app_engine_application.gae_import_service.default_hostname}/_ah/push-handlers/receive_messages?token=${random_uuid.pubsub-secret-token.result}"
+    push_endpoint = "https://${google_app_engine_application.gae_import_service.app_id}.appspot.com/_ah/push-handlers/receive_messages?token=${random_uuid.pubsub-secret-token.result}"
 
     oidc_token {
       service_account_email = local.import_service_sa_email
