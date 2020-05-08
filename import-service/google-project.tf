@@ -16,6 +16,9 @@ module "import-service-project" {
     {
       sa_name = "import-service"
       key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
+    },{
+      sa_name = "deployer"
+      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
     }
   ]
 
@@ -32,6 +35,18 @@ module "import-service-project" {
   },{
     sa_role = "roles/iam.serviceAccountTokenCreator"
     sa_name = "import-service"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/appengine.deployer"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/appengine.serviceAdmin"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/cloudbuild.builds.builder"
+    sa_name = "deployer"
     sa_project = "" // defaults to the created project
   }]
 
