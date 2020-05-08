@@ -41,7 +41,7 @@ module "import-service-project" {
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
-    sa_role = "roles/appengine.appAdmin"
+    sa_role = "roles/appengine.serviceAdmin"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
