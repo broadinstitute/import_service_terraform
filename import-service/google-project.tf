@@ -8,6 +8,7 @@ module "import-service-project" {
     "logging.googleapis.com",
     "monitoring.googleapis.com",
     "appengine.googleapis.com",
+    "cloudbuild.googleapis.com",
     "pubsub.googleapis.com",
     "storage-component.googleapis.com",
     "iamcredentials.googleapis.com"
