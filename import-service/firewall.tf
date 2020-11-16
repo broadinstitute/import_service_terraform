@@ -9,6 +9,19 @@ resource "google_app_engine_firewall_rule" "broad_firewall" {
   source_range = element(var.broad_range_cidrs, count.index)
 }
 
+# import-service must whitelist back-rawls in each environment
+
+data "google_compute_instance" "back_rawls" {
+  name = local.back_rawls_instance_name
+}
+
+resource "google_app_engine_firewall_rule" "back_rawls" {
+  project      = google_app_engine_application.gae_import_service.project
+  priority     = 1000 + length(var.broad_range_cidrs)
+  action       = "ALLOW"
+  source_range = data.google_compute_instance.back_rawls.network_interface.0.access_config.0.nat_ip
+}
+
 # default-deny firewall rule
 resource "google_app_engine_firewall_rule" "firewall_default_deny" {
   project = google_app_engine_application.gae_import_service.project
