@@ -12,8 +12,9 @@ resource "google_app_engine_firewall_rule" "broad_firewall" {
 # import-service must whitelist back-rawls in each environment
 
 data "google_compute_instance" "back_rawls" {
-  name = local.back_rawls_instance_name
-  zone = "us-central1-a"
+  name    = local.back_rawls_instance_name
+  project = "broad-dsde-dev"
+  zone    = "us-central1-a"
 }
 
 resource "google_app_engine_firewall_rule" "back_rawls" {
