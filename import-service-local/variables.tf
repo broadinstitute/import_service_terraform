@@ -36,15 +36,3 @@ variable "billing_account_id" {
 }
 
 variable "terraform_google_project" {}
-
-#
-# Firewall vars
-#
-
-variable "back_rawls_instance_name" {
-  description = "Name of the back-rawls gce instance for an environment"
-}
-
-locals {
-  back_rawls_instance_name = var.back_rawls_instance_name ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
-}

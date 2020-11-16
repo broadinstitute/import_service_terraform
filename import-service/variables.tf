@@ -1,7 +1,7 @@
 # See: https://github.com/hashicorp/terraform/issues/21418#issuecomment-495818852
 variable dependencies {
-  type = any
-  default = []
+  type        = any
+  default     = []
   description = "Work-around for Terraform 0.12's lack of support for 'depends_on' in custom modules."
 }
 
@@ -38,7 +38,7 @@ variable "billing_account_id" {
 
 variable "service" {
   description = "App name"
-  default = "importservice"
+  default     = "importservice"
 }
 
 #
@@ -47,8 +47,8 @@ variable "service" {
 
 # sourced from https://docs.google.com/document/d/1AzTX93P35r2alE4-pviPWf-1LRBWVAF-BwrYKVVpzWo/edit
 variable "broad_range_cidrs" {
-  type    = list(string)
-  default = [ "69.173.64.0/19",
+  type = list(string)
+  default = ["69.173.64.0/19",
     "69.173.96.0/20",
     "69.173.112.0/21",
     "69.173.120.0/22",
@@ -57,8 +57,13 @@ variable "broad_range_cidrs" {
     "69.173.127.0/25",
     "69.173.127.128/26",
     "69.173.127.192/27",
-    "69.173.127.240/28" ]
+  "69.173.127.240/28"]
 }
+
+locals {
+  back_rawls_instance_name = var.back_rawls_instance_name ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
+}
+
 
 #
 # Vault vars
@@ -66,17 +71,17 @@ variable "broad_range_cidrs" {
 
 variable "vault_root" {
   description = "Root path for import service secrets"
-  default = "secret/dsde/firecloud"
+  default     = "secret/dsde/firecloud"
 }
 
 variable "vault_path" {
   description = "Vault path suffix for secrets in this deployment"
-  default = ""
+  default     = ""
 }
 
 locals {
-  vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
-  bucket_suffix = var.bucket_suffix == "" ? var.env : var.bucket_suffix
+  vault_path                    = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
+  bucket_suffix                 = var.bucket_suffix == "" ? var.env : var.bucket_suffix
   import_service_google_project = var.import_service_google_project == "" ? "import-service-${var.env}" : var.import_service_google_project
 }
 
