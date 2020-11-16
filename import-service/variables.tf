@@ -61,7 +61,9 @@ variable "broad_range_cidrs" {
 }
 
 variable "back_rawls_instance_name" {
+  type        = string
   description = "Name of the back-rawls gce instance for an environment"
+  default     = ""
 }
 
 locals {
