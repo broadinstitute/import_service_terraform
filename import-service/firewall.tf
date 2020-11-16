@@ -21,7 +21,7 @@ resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + length(var.broad_range_cidrs)
   action       = "ALLOW"
-  source_range = "${data.google_compute_instance.back_rawls.*.network_interface.0.access_config.0.nat_ip}"
+  source_range = "${data.google_compute_instance.back_rawls.network_interface.0.access_config.0.nat_ip}"
 }
 
 # default-deny firewall rule
