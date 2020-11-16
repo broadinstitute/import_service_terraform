@@ -60,6 +60,10 @@ variable "broad_range_cidrs" {
   "69.173.127.240/28"]
 }
 
+variable "back_rawls_instance_name" {
+  description = "Name of the back-rawls gce instance for an environment"
+}
+
 locals {
   back_rawls_instance_name = var.back_rawls_instance_name ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
 }
