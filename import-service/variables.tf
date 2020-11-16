@@ -67,7 +67,8 @@ variable "back_rawls_instance_name" {
 }
 
 locals {
-  back_rawls_instance_name = var.back_rawls_instance_name ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
+  back_rawls_name_provided = var.back_rawls_instance_name != ""
+  back_rawls_instance_name = local.back_rawls_name_provided ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
 }
 
 
