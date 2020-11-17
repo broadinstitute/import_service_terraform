@@ -52,6 +52,25 @@ resource "google_app_engine_firewall_rule" "orchestration_firewall" {
   source_range = "${data.google_compute_instance.orchestration[count.index].network_interface.0.access_config.0.nat_ip}"
 }
 
+# Whitelist terra GKE cluster egress IPs
+
+# Load remote state for each cluster/workspace from the terra-cluster root module
+# Access like this:
+#   data.terraform_remote_state.terra-cluster[$cluster].outputs.egress_ips
+data "terraform_remote_state" "cluster" {
+  for_each = var.clusters_to_whitelist
+
+  backend   = "gcs"
+  workspace = each.key # "integration" cluster uses "integration" workspace etc
+
+  config = {
+    bucket = local.remote_state_bucket
+    prefix = "${local.remote_state_path}/terra-cluster"
+
+    credentials = var.google_credentials
+  }
+}
+
 # default-deny firewall rule
 resource "google_app_engine_firewall_rule" "firewall_default_deny" {
   project = google_app_engine_application.gae_import_service.project

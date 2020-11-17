@@ -78,6 +78,24 @@ variable "orchestration_instances" {
   description = "A list of the names of each firecloud orchestration instance in a particular environment"
 }
 
+variable "google_credentials" {
+  type        = string
+  description = "Path atlantis credentials are stored at to look up k8s egress ips in remote state"
+  default     = "/var/secrets/atlantis-sa/atlantis-sa.json"
+}
+
+# List of Terra K8s clusters to whitelist.
+variable "clusters_to_whitelist" {
+  type        = set(string)
+  default     = []
+  description = "List of Terra K8s clusters to whitelist. Eg. dev, integration"
+}
+
+locals {
+  remote_state_bucket = "dsp-tools-tf-state"
+  remote_state_path   = "tfstate-managed"
+}
+
 #
 # Vault vars
 #
