@@ -17,6 +17,7 @@ data "google_compute_instance" "back_rawls" {
   zone    = "us-central1-a"
 }
 
+# back rawls makes calls to import-service and must be whitelisted
 resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + length(var.broad_range_cidrs)
@@ -30,6 +31,16 @@ resource "google_app_engine_firewall_rule" "pubsub_firewall" {
   priority     = 1020
   action       = "ALLOW"
   source_range = var.pubsub_ip_range
+}
+
+# Import service must allow traffic from each firecloud orchestration instances in an environment
+
+# look up the ip of each orch instance
+data "google_compute_instance" "back_rawls" {
+  count   = length(var.orchestration_instances)
+  name    = var.orchestration_instances[count.index]
+  project = "broad-dsde-${var.env}"
+  zone    = "us-central1-a"
 }
 
 # default-deny firewall rule

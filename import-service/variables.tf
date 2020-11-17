@@ -74,6 +74,10 @@ variable "pubsub_ip_range" {
   default     = "2002:a00::/24"
 }
 
+variable "orchestration_instances" {
+  type        = list(string)
+  description = "A list of the names of each firecloud orchestration instance in a particular environment"
+}
 
 locals {
   back_rawls_name_provided = var.back_rawls_instance_name != ""
