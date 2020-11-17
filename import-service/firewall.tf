@@ -44,7 +44,7 @@ data "google_compute_instance" "orchestration" {
 }
 
 resource "google_app_engine_firewall_rule" "orchestration_firewall" {
-  for_each = data.google_compute_instance.orchestration
+  for_each = data.google_compute_instance.orchestration.*
 
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1030 + each.key
