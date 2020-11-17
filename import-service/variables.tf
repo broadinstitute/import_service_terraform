@@ -66,6 +66,15 @@ variable "back_rawls_instance_name" {
   default     = ""
 }
 
+# Pub/Sub doesn't publish their IP ranges, I found this on SO and verified experimentally:
+# https://stackoverflow.com/a/51323548/2941784
+variable "pubsub_ip_range" {
+  type        = string
+  description = "This is a work around for pub/sub not listing their ips publicly"
+  default     = "2002:a00::/24"
+}
+
+
 locals {
   back_rawls_name_provided = var.back_rawls_instance_name != ""
   back_rawls_instance_name = local.back_rawls_name_provided ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
