@@ -60,10 +60,9 @@ variable "broad_range_cidrs" {
   "69.173.127.240/28"]
 }
 
-variable "back_rawls_instance_name" {
+variable "back_rawls_instance" {
   type        = string
   description = "Name of the back-rawls gce instance for an environment"
-  default     = ""
 }
 
 # Pub/Sub doesn't publish their IP ranges, I found this on SO and verified experimentally:
@@ -78,12 +77,6 @@ variable "orchestration_instances" {
   type        = list(string)
   description = "A list of the names of each firecloud orchestration instance in a particular environment"
 }
-
-locals {
-  back_rawls_name_provided = var.back_rawls_instance_name != ""
-  back_rawls_instance_name = local.back_rawls_name_provided ? var.back_rawls_instance_name : "gce-rawls-${var.env}701"
-}
-
 
 #
 # Vault vars
