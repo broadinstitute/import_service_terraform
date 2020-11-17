@@ -36,7 +36,7 @@ resource "google_app_engine_firewall_rule" "pubsub_firewall" {
 # Import service must allow traffic from each firecloud orchestration instances in an environment
 
 # look up the ip of each orch instance
-data "google_compute_instance" "back_rawls" {
+data "google_compute_instance" "orchestration" {
   count   = length(var.orchestration_instances)
   name    = var.orchestration_instances[count.index]
   project = "broad-dsde-${var.env}"
