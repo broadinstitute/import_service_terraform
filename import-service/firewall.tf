@@ -47,7 +47,7 @@ resource "google_app_engine_firewall_rule" "orchestration_firewall" {
   for_each = data.google_compute_instance.orchestration
 
   project      = google_app_engine_application.gae_import_service.project
-  priority     = 1030 + each.index
+  priority     = 1030 + each.key
   action       = "ALLOW"
   source_range = each.value.access_config.0.nat_ip
 }
