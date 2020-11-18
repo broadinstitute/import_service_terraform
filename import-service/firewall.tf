@@ -83,7 +83,7 @@ resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1040 + count.index
   action       = "ALLOW"
-  source_range = "${local.cluster_egress_ips[count.inded]}"
+  source_range = "${local.cluster_egress_ips[count.index]}"
 }
 
 # default-deny firewall rule
