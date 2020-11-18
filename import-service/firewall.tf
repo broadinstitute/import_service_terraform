@@ -81,7 +81,7 @@ locals {
 }
 
 # Whitelisting the terra k8s cluster egress ips.
-# This is needed to communicate with back rawls once it is migrated to k8s.
+# This is needed to communicate with services deployed on k8s (rawls and sam)
 resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
   count = length(local.egress_ips)
 
