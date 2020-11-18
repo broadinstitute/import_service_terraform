@@ -75,16 +75,17 @@ data "terraform_remote_state" "cluster" {
 # app engine firewall resource
 locals {
   cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : cluster.outputs.egress_ips]
-  egress_ips             = [for ip in local.cluster_egress_outputs : ip]
+  egress_ips             = [for output in local.cluster_egress_outputs : output]
+  egress_ip_list         = [for ip in local.egress_ips : ip]
 }
 
 resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
-  count = length(local.egress_ips)
+  count = length(local.egress_ip_list)
 
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1040 + count.index
   action       = "ALLOW"
-  source_range = "${local.egress_ips[count.index]}"
+  source_range = "${local.egress_ip_list[count.index]}"
 }
 
 # default-deny firewall rule
