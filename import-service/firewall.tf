@@ -74,7 +74,7 @@ data "terraform_remote_state" "cluster" {
 # Extract the cluster egress ips from terraform state and transform data to a form usable by the 
 # app engine firewall resource
 locals {
-  cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : cluster.outputs.egress_ips[0]]
+  cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : cluster.outputs.egress_ips]
   egress_ips             = [for ip in local.cluster_egress_outputs : ip]
 }
 
