@@ -4,6 +4,7 @@ resource "google_app_engine_firewall_rule" "broad_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + count.index
   action       = "ALLOW"
+  description  = "Broad office ips"
   source_range = element(var.broad_range_cidrs, count.index)
 }
 
@@ -19,6 +20,7 @@ resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + length(var.broad_range_cidrs)
   action       = "ALLOW"
+  description  = "back-rawls vm"
   source_range = "${data.google_compute_instance.back_rawls.network_interface.0.access_config.0.nat_ip}"
 }
 
@@ -27,6 +29,7 @@ resource "google_app_engine_firewall_rule" "pubsub_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1020
   action       = "ALLOW"
+  description  = "pubsub"
   source_range = var.pubsub_ip_range
 }
 
@@ -46,6 +49,7 @@ resource "google_app_engine_firewall_rule" "orchestration_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1030 + count.index
   action       = "ALLOW"
+  description  = "firecloud-orchestration vms"
   source_range = "${data.google_compute_instance.orchestration[count.index].network_interface.0.access_config.0.nat_ip}"
 }
 
@@ -84,6 +88,7 @@ resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1040 + count.index
   action       = "ALLOW"
+  description  = "terra k8s egress ips"
   source_range = "${local.egress_ips[count.index]}"
 }
 
@@ -95,5 +100,6 @@ resource "google_app_engine_firewall_rule" "firewall_default_deny" {
   # cloud console but setting it in terraform gives an error. so we'll set a DENY at the second lowest prio instead.
   priority     = 2147483646
   action       = "DENY"
+  description  = "default deny"
   source_range = "*"
 }
