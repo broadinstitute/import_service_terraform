@@ -75,7 +75,7 @@ data "terraform_remote_state" "cluster" {
 # app engine firewall resource
 locals {
   cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : tolist(cluster.outputs.egress_ips)]
-  egress_ips             = [for ip in local.cluster_egress_outputs : ip]
+  egress_ips             = [for ip in local.cluster_egress_outputs : tostring(ip)]
 }
 
 resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
