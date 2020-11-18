@@ -1,6 +1,4 @@
 # firewall rules that allow broad ips to access GAE
-# FIXME This doesn't work, see https://github.com/terraform-providers/terraform-provider-google/issues/5681
-# The ATTENTION output in output.tf and associated script is the workaround for the time being.
 resource "google_app_engine_firewall_rule" "broad_firewall" {
   count        = length(var.broad_range_cidrs)
   project      = google_app_engine_application.gae_import_service.project
@@ -17,7 +15,6 @@ data "google_compute_instance" "back_rawls" {
   zone    = "us-central1-a"
 }
 
-# back rawls makes calls to import-service and must be whitelisted
 resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + length(var.broad_range_cidrs)
@@ -72,12 +69,15 @@ data "terraform_remote_state" "cluster" {
 }
 
 # Extract the cluster egress ips from terraform state and transform data to a form usable by the 
-# app engine firewall resource
+# app engine firewall resource. Takes a list of cluster names and outputs a list of egress ips
+# from each of those clusters 
 locals {
   cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : tolist(cluster.outputs.egress_ips)]
   egress_ips             = flatten([for ip in local.cluster_egress_outputs : ip])
 }
 
+# Whitelisting the terra k8s cluster egress ips.
+# This is needed to communicate with back rawls once it is migrated to k8s.
 resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
   count = length(local.egress_ips)
 

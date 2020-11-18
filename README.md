@@ -11,6 +11,9 @@ Your .tfvars file should contain the following:
 `terraform_google_project`                      | the google project owning the service account that Terraform runs as. can be empty if running locally
 `audience_domain`                                | used as a semi-secret by pub/sub. must match import service environment variable
 `rawls_sa_email`                                | email address of the rawls service account in this env
+`back_rawls_instance`                           | resource name for the back rawls vm in this env
+`orchestration_instances                        | a list of resource names of the orchestration vms in this env
+`clusters_to_whitelist`                         | a list of terra k8s clusters to whitelist traffic from. Needed to communicate with back rawls and orch in k8s
 `sam_sa_email`                                  | email address of the sam service account in this env
 `terra_google_project`                          | google project that terra monolithic services run in (i.e. where rawls and sam SAs live)
 

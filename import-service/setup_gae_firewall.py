@@ -1,3 +1,7 @@
+# *** DEPRECATED ***
+# this script is now deprecated as the bug mentioned below has been resolved.
+# firewall configuration is now managed in ./firewall.tf
+
 #!/usr/bin/env python3
 
 # This Python 3.5+ script is a workaround for Terraform's inability to reliably create Google App Engine firewall rules.
