@@ -1,7 +1,7 @@
 # See: https://github.com/hashicorp/terraform/issues/21418#issuecomment-495818852
 variable dependencies {
-  type = any
-  default = []
+  type        = any
+  default     = []
   description = "Work-around for Terraform 0.12's lack of support for 'depends_on' in custom modules."
 }
 
@@ -38,7 +38,7 @@ variable "billing_account_id" {
 
 variable "service" {
   description = "App name"
-  default = "importservice"
+  default     = "importservice"
 }
 
 #
@@ -47,17 +47,57 @@ variable "service" {
 
 # sourced from https://docs.google.com/document/d/1AzTX93P35r2alE4-pviPWf-1LRBWVAF-BwrYKVVpzWo/edit
 variable "broad_range_cidrs" {
-  type    = list(string)
-  default = [ "69.173.64.0/19",
-    "69.173.96.0/20",
-    "69.173.112.0/21",
-    "69.173.120.0/22",
-    "69.173.124.0/23",
-    "69.173.126.0/24",
-    "69.173.127.0/25",
+  type = list(string)
+  default = ["69.173.112.0/21",
+    "69.173.127.232/29",
     "69.173.127.128/26",
+    "69.173.127.0/25",
+    "69.173.127.240/28",
+    "69.173.127.224/30",
+    "69.173.127.230/31",
+    "69.173.120.0/22",
+    "69.173.127.228/32",
+    "69.173.126.0/24",
+    "69.173.96.0/20",
+    "69.173.64.0/19",
     "69.173.127.192/27",
-    "69.173.127.240/28" ]
+  "69.173.124.0/23"]
+}
+
+variable "back_rawls_instance" {
+  type        = string
+  description = "Name of the back-rawls gce instance for an environment"
+}
+
+# Pub/Sub doesn't publish their IP ranges, I found this on SO and verified experimentally:
+# https://stackoverflow.com/a/51323548/2941784
+variable "pubsub_ip_range" {
+  type        = string
+  description = "This is a work around for pub/sub not listing their ips publicly"
+  default     = "2002:a00::/24"
+}
+
+variable "orchestration_instances" {
+  type        = list(string)
+  description = "A list of the names of each firecloud orchestration instance in a particular environment"
+}
+
+variable "google_credentials" {
+  type        = string
+  description = "Path atlantis credentials are stored at to look up k8s egress ips in remote state"
+  default     = "/var/secrets/atlantis-sa/atlantis-sa.json"
+}
+
+# List of Terra K8s clusters to whitelist.
+variable "clusters_to_whitelist" {
+  type        = set(string)
+  default     = []
+  description = "List of Terra K8s clusters to whitelist. Eg. dev, integration"
+}
+
+locals {
+  remote_state_bucket = "dsp-tools-tf-state"
+  remote_state_path   = "tfstate-managed"
 }
 
 #
@@ -66,17 +106,17 @@ variable "broad_range_cidrs" {
 
 variable "vault_root" {
   description = "Root path for import service secrets"
-  default = "secret/dsde/firecloud"
+  default     = "secret/dsde/firecloud"
 }
 
 variable "vault_path" {
   description = "Vault path suffix for secrets in this deployment"
-  default = ""
+  default     = ""
 }
 
 locals {
-  vault_path = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
-  bucket_suffix = var.bucket_suffix == "" ? var.env : var.bucket_suffix
+  vault_path                    = var.vault_path == "" ? "${var.env}/import-service" : var.vault_path
+  bucket_suffix                 = var.bucket_suffix == "" ? var.env : var.bucket_suffix
   import_service_google_project = var.import_service_google_project == "" ? "import-service-${var.env}" : var.import_service_google_project
 }
 
