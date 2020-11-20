@@ -92,6 +92,18 @@ resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
   source_range = "${local.egress_ips[count.index]}"
 }
 
+# This is needed due to details of google's internal networking between gae and gke
+# This is not a default allow all traffic rule. In this context 0.0.0.0
+# enables Private Google Access which is how gke communicates with gae
+# internally. More information: https://cloud.google.com/vpc/docs/configure-private-google-access
+resource "google_app_engine_firewall_rule" "gke_gae_vpc_firewall" {
+  project      = google_app_engine_application.gae_import_service.project
+  priority     = 1050
+  action       = "ALLOW"
+  description  = "gcp internal network from gke to gae"
+  source_range = "0.0.0.0"
+}
+
 # default-deny firewall rule
 resource "google_app_engine_firewall_rule" "firewall_default_deny" {
   project = google_app_engine_application.gae_import_service.project
