@@ -11,17 +11,21 @@ resource "google_app_engine_firewall_rule" "broad_firewall" {
 # import-service must whitelist back-rawls in each environment
 
 data "google_compute_instance" "back_rawls" {
+  count = var.back_rawls_instance == "" ? 0 : 1
+
   name    = var.back_rawls_instance
   project = "broad-dsde-${var.env}"
   zone    = "us-central1-a"
 }
 
 resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
+  count = var.back_rawls_instance == "" ? 0 : 1
+
   project      = google_app_engine_application.gae_import_service.project
   priority     = 1000 + length(var.broad_range_cidrs)
   action       = "ALLOW"
   description  = "back-rawls vm"
-  source_range = "${data.google_compute_instance.back_rawls.network_interface.0.access_config.0.nat_ip}"
+  source_range = "${data.google_compute_instance.back_rawls[0].network_interface.0.access_config.0.nat_ip}"
 }
 
 # import-service needs to whitelist pubsub
