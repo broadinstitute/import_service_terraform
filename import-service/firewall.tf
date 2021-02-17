@@ -53,45 +53,6 @@ resource "google_app_engine_firewall_rule" "orchestration_firewall" {
   source_range = "${data.google_compute_instance.orchestration[count.index].network_interface.0.access_config.0.nat_ip}"
 }
 
-# Whitelist terra GKE cluster egress IPs
-
-# Load remote state for each cluster/workspace from the terra-cluster root module
-# Access like this:
-#   data.terraform_remote_state.terra-cluster[$cluster].outputs.egress_ips
-data "terraform_remote_state" "cluster" {
-  for_each = var.clusters_to_whitelist
-
-  backend   = "gcs"
-  workspace = each.key # "integration" cluster uses "integration" workspace etc
-
-  config = {
-    bucket = local.remote_state_bucket
-    prefix = "${local.remote_state_path}/terra-cluster"
-
-    credentials = var.google_credentials
-  }
-}
-
-# Extract the cluster egress ips from terraform state and transform data to a form usable by the 
-# app engine firewall resource. Takes a list of cluster names and outputs a list of egress ips
-# from each of those clusters 
-locals {
-  cluster_egress_outputs = [for cluster in data.terraform_remote_state.cluster : tolist(cluster.outputs.egress_ips)]
-  egress_ips             = flatten([for ip in local.cluster_egress_outputs : ip])
-}
-
-# Whitelisting the terra k8s cluster egress ips.
-# This is needed to communicate with services deployed on k8s (rawls and sam)
-resource "google_app_engine_firewall_rule" "k8s_egress_firewall" {
-  count = length(local.egress_ips)
-
-  project      = google_app_engine_application.gae_import_service.project
-  priority     = 1040 + count.index
-  action       = "ALLOW"
-  description  = "terra k8s egress ips"
-  source_range = "${local.egress_ips[count.index]}"
-}
-
 # This is needed due to details of google's internal networking between gae and gke
 # This is not a default allow all traffic rule. In this context 0.0.0.0
 # enables Private Google Access which is how gke communicates with gae
