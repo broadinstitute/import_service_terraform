@@ -2,6 +2,14 @@ resource "google_storage_bucket" "batchupsert_bucket" {
   name = "import-service-batchupsert-${local.bucket_suffix}"
   project = module.import-service-project.project_name
   location = "US"
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type = "Delete"
+    }
+  }
 }
 
 resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bucket" {
