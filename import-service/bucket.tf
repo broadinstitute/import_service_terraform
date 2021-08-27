@@ -1,7 +1,6 @@
 resource "google_storage_bucket" "batchupsert_bucket" {
   name = "import-service-batchupsert-${local.bucket_suffix}"
   project = module.import-service-project.project_name
-  uniform_bucket_level_access = true
   location = "US"
   lifecycle_rule {
     condition {
