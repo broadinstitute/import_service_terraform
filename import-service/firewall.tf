@@ -8,26 +8,6 @@ resource "google_app_engine_firewall_rule" "broad_firewall" {
   source_range = element(var.broad_range_cidrs, count.index)
 }
 
-# import-service must whitelist back-rawls in each environment
-
-data "google_compute_instance" "back_rawls" {
-  count = var.back_rawls_instance == "" ? 0 : 1
-
-  name    = var.back_rawls_instance
-  project = "broad-dsde-${var.env}"
-  zone    = "us-central1-a"
-}
-
-resource "google_app_engine_firewall_rule" "back_rawls_firewall" {
-  count = var.back_rawls_instance == "" ? 0 : 1
-
-  project      = google_app_engine_application.gae_import_service.project
-  priority     = 1000 + length(var.broad_range_cidrs)
-  action       = "ALLOW"
-  description  = "back-rawls vm"
-  source_range = "${data.google_compute_instance.back_rawls[0].network_interface.0.access_config.0.nat_ip}"
-}
-
 # import-service needs to whitelist pubsub
 resource "google_app_engine_firewall_rule" "pubsub_firewall" {
   project      = google_app_engine_application.gae_import_service.project
@@ -35,26 +15,6 @@ resource "google_app_engine_firewall_rule" "pubsub_firewall" {
   action       = "ALLOW"
   description  = "pubsub"
   source_range = var.pubsub_ip_range
-}
-
-# Import service must allow traffic from each firecloud orchestration instances in an environment
-
-# look up the ip of each orch instance
-data "google_compute_instance" "orchestration" {
-  count   = length(var.orchestration_instances)
-  name    = var.orchestration_instances[count.index]
-  project = "broad-dsde-${var.env}"
-  zone    = "us-central1-a"
-}
-
-resource "google_app_engine_firewall_rule" "orchestration_firewall" {
-  count = length(var.orchestration_instances)
-
-  project      = google_app_engine_application.gae_import_service.project
-  priority     = 1030 + count.index
-  action       = "ALLOW"
-  description  = "firecloud-orchestration vms"
-  source_range = "${data.google_compute_instance.orchestration[count.index].network_interface.0.access_config.0.nat_ip}"
 }
 
 # This is needed due to details of google's internal networking between gae and gke
