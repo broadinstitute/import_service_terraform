@@ -29,6 +29,17 @@ resource "google_app_engine_firewall_rule" "gke_gae_vpc_firewall" {
   source_range = "0.0.0.0"
 }
 
+# This rule lets cloud scheduler make HTTP calls to import service
+# https://broadworkbench.atlassian.net/browse/AJ-354
+# https://cloud.google.com/appengine/docs/standard/python/understanding-firewalls#allowing_incoming_requests_from_your_services
+resource "google_app_engine_firewall_rule" "cloud_scheduler_allow" {
+  project      = google_app_engine_application.gae_import_service.project
+  priority     = 1060
+  action       = "ALLOW"
+  description  = "cloud scheduler access"
+  source_range = "0.1.0.2/32"
+}
+
 # default-deny firewall rule
 resource "google_app_engine_firewall_rule" "firewall_default_deny" {
   project = google_app_engine_application.gae_import_service.project
