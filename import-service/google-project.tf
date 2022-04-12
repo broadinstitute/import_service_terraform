@@ -50,6 +50,10 @@ module "import-service-project" {
     sa_role = "roles/cloudbuild.builds.builder"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/cloudscheduler.admin"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
   }]
 
   providers = {
