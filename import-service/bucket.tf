@@ -22,7 +22,7 @@ resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bu
   depends_on = [module.import-service-project.service_accounts_with_keys]
 }
 
-resource "google_storage_bucket_fiab_iam_binding" "fiab_owns_batchupsert_bucket_in_qa" {
+resource "google_storage_bucket_iam_binding" "fiab_owns_batchupsert_bucket_in_qa" {
   bucket = google_storage_bucket.batchupsert_bucket.name
   role = "roles/storage.admin"
   members = [
