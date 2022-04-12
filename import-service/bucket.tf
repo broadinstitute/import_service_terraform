@@ -29,7 +29,7 @@ resource "google_storage_bucket_fiab_iam_binding" "fiab_owns_batchupsert_bucket_
     "serviceAccount:import-service-fiab@broad-dsde-qa.iam.gserviceaccount.com",
   ]
   depends_on = [module.import-service-project.service_accounts_with_keys]
-  count = var.env == 'qa' ? 1 : 0
+  count = var.env == "qa" ? 1 : 0
 }
 
   
