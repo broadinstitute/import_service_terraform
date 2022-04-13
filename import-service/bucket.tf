@@ -17,8 +17,8 @@ resource "google_storage_bucket_iam_binding" "import_service_owns_batchupsert_bu
   bucket = google_storage_bucket.batchupsert_bucket.name
   role = "roles/storage.admin"
   members = var.env == "qa" ? [
-    "serviceAccount:import-service-fiab@broad-dsde-qa.iam.gserviceaccount.com", "serviceAccount:${var.rawls_sa_email}",
-  ] : ["serviceAccount:${var.rawls_sa_email}", ]
+    "serviceAccount:import-service-fiab@broad-dsde-qa.iam.gserviceaccount.com", "serviceAccount:${local.import_service_sa_email}",
+  ] : ["serviceAccount:${local.import_service_sa_email}", ]
   depends_on = [module.import-service-project.service_accounts_with_keys]
 }
 
