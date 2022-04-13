@@ -12,7 +12,8 @@ module "import-service-project" {
     "pubsub.googleapis.com",
     "storage-component.googleapis.com",
     "iamcredentials.googleapis.com",
-    "sqladmin.googleapis.com"
+    "sqladmin.googleapis.com",
+    "cloudscheduler.googleapis.com"
   ]
   service_accounts_to_create_with_keys = [
     {
