@@ -17,5 +17,5 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: import-service-local/
-          output_format: sarif
           framework: terraform
+          quiet: true
