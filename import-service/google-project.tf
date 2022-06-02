@@ -34,12 +34,7 @@ module "import-service-project" {
 
   # but in non-QA/non-Dev - including prod - we don't want to create a key for the import-service SA;
   # why create a key that needs rotating and protecting if we never use that key?
-  service_accounts_to_create_without_keys = var.env == "qa" || var.env == "dev" ? [] : [
-    {
-      sa_name = "import-service"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-    }
-  ]
+  service_accounts_to_create_without_keys = var.env == "qa" || var.env == "dev" ? [] : ["import-service"]
 
   roles_to_grant_by_email_and_type = [{
     email = local.terraform_sa_email
