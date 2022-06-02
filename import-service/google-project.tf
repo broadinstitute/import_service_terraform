@@ -15,13 +15,29 @@ module "import-service-project" {
     "sqladmin.googleapis.com",
     "cloudscheduler.googleapis.com"
   ]
-  service_accounts_to_create_with_keys = [
+
+  # in QA and Dev, we need the import-service SA to have a working key because FiaBs require that.
+  service_accounts_to_create_with_keys = var.env == "qa" || var.env == "dev" ? [
     {
       sa_name = "import-service"
       key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
     },{
       sa_name = "deployer"
       key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
+    }
+  ] : [
+    {
+      sa_name = "deployer"
+      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
+    }
+  ]
+
+  # but in non-QA/non-Dev - including prod - we don't want to create a key for the import-service SA;
+  # why create a key that needs rotating and protecting if we never use that key?
+  service_accounts_to_create_without_keys = var.env == "qa" || var.env == "dev" ? [] : [
+    {
+      sa_name = "import-service"
+      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
     }
   ]
 
