@@ -16,31 +16,78 @@ module "import-service-project" {
     "cloudscheduler.googleapis.com"
   ]
 
-  # in QA and Dev, we need the import-service SA to have a working key because FiaBs require that.
-  service_accounts_to_create_with_keys = var.env == "qa" || var.env == "dev" ? [
-    {
-      sa_name = "import-service"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-    },{
-      sa_name = "deployer"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
-    }
-  ] : [
-    {
-      sa_name = "deployer"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
-    }
-  ]
+  # create import-service SA
+  resource "google_service_account" "service-account-import-service" {
+    account_id   = "import-service"
+    display_name   = "import-service"
+    # project     should default
+  }
 
-  # but in non-QA/non-Dev - including prod - we don't want to create a key for the import-service SA;
-  # why create a key that needs rotating and protecting if we never use that key?
-  service_accounts_to_create_without_keys = var.env == "qa" || var.env == "dev" ? [] : ["import-service"]
+  # create deployer SA
+  resource "google_service_account" "service-account-deployer" {
+    account_id   = "deployer"
+    display_name   = "deployer"
+    # project     should default
+  }
 
-  roles_to_grant_by_email_and_type = [{
-    email = local.terraform_sa_email
-    role = "roles/iam.serviceAccountTokenCreator"
-    id_type = local.terraform_sa_email_is_sa ? "serviceAccount" : "user"
-  }]
+  # create key for import-service SA
+    resource "google_service_account_key" "service-account-key-import-service" {
+    service_account_id = google_service_account.service-account-import-service.name
+  }
+
+  # create key for deployer SA
+    resource "google_service_account_key" "service-account-key-deployer" {
+    service_account_id = google_service_account.service-account-deployer.name
+  }
+
+  provider "vault" {}
+
+  # save import-service key to Vault
+  resource "vault_generic_secret" "vault-account-key-import-service" {
+    path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
+    data_json = "${base64decode(google_service_account_key.service-account-key-import-service.private_key)}"
+  }
+
+  # save deployer key to Vault
+  resource "vault_generic_secret" "vault-account-key-deployer" {
+    path = "${var.vault_root}/${local.vault_path}/deployer.json"
+    data_json = "${base64decode(google_service_account_key.service-account-key-deployer.private_key)}"
+  }
+
+
+  # Refactoring:
+  # the previous six resources (2x google_service_account, 2x google_service_account_key, 2x vault_generic_secret)
+  # were previously handled by the "service_accounts_to_create_with_keys" helper in 
+  # terraform-shared.git//terraform-modules/google-project.
+  #
+  # I am making them explicit here inside import_service_terraform and bypassing service_accounts_to_create_with_key
+  # to support a future change in which we'll be changing/removing some of those resources. Changes/removals
+  # are difficult when using service_accounts_to_create_with_key because service_accounts_to_create_with_key relies
+  # on arrays; it is hard to pop specific resources out of those arrays.
+  moved {
+    from = google_service_account.service-accounts-with-keys[0]
+    to   = google_service_account.service-account-import-service
+  }
+  moved {
+    from = google_service_account.service-accounts-with-keys[1]
+    to   = google_service_account.service-account-deployer
+  }
+  moved {
+    from = google_service_account_key.service-accounts-with-keys[0]
+    to   = google_service_account_key.service-account-key-import-service
+  }
+  moved {
+    from = google_service_account_key.service-accounts-with-keys[1]
+    to   = google_service_account_key.service-account-key-deployer
+  }
+  moved {
+    from = vault_generic_secret.app_account_key[0]
+    to   = vault_generic_secret.vault-account-key-import-service
+  }
+  moved {
+    from = vault_generic_secret.app_account_key[1]
+    to   = vault_generic_secret.vault-account-key-deployer
+  }
 
   service_accounts_to_grant_by_name_and_project = [{
     sa_role = "roles/pubsub.admin"
