@@ -40,8 +40,6 @@ module "import-service-project" {
     service_account_id = google_service_account.service-account-deployer.name
   }
 
-  provider "vault" {}
-
   # save import-service key to Vault
   resource "vault_generic_secret" "vault-account-key-import-service" {
     path = "${var.vault_root}/${local.vault_path}/import-service-account.json"

@@ -5,3 +5,5 @@ provider "google" {
 provider "google-beta" {
   alias = "target"
 }
+
+provider "vault" {}
