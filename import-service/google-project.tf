@@ -1,53 +1,3 @@
-module "import-service-project" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-0.0.3-tf-0.12"
-
-  project_name = local.import_service_google_project
-  folder_id = var.import_service_google_project_folder_id
-  billing_account_id = var.billing_account_id
-  apis_to_enable = [
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-    "appengine.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "pubsub.googleapis.com",
-    "storage-component.googleapis.com",
-    "iamcredentials.googleapis.com",
-    "sqladmin.googleapis.com",
-    "cloudscheduler.googleapis.com"
-  ]
-
-  service_accounts_to_grant_by_name_and_project = [{
-    sa_role = "roles/pubsub.admin"
-    sa_name = "import-service"
-    sa_project = "" // defaults to the created project
-  },{
-    sa_role = "roles/iam.serviceAccountTokenCreator"
-    sa_name = "import-service"
-    sa_project = "" // defaults to the created project
-  },{
-    sa_role = "roles/appengine.deployer"
-    sa_name = "deployer"
-    sa_project = "" // defaults to the created project
-  },{
-    sa_role = "roles/appengine.serviceAdmin"
-    sa_name = "deployer"
-    sa_project = "" // defaults to the created project
-  },{
-    sa_role = "roles/cloudbuild.builds.builder"
-    sa_name = "deployer"
-    sa_project = "" // defaults to the created project
-  },{
-    sa_role = "roles/cloudscheduler.admin"
-    sa_name = "deployer"
-    sa_project = "" // defaults to the created project
-  }]
-
-  providers = {
-    google.target = google.target
-    vault = vault
-  }
-}
-
 # create import-service SA
 resource "google_service_account" "service-account-import-service" {
   account_id   = "import-service"
@@ -63,12 +13,12 @@ resource "google_service_account" "service-account-deployer" {
 }
 
 # create key for import-service SA
-  resource "google_service_account_key" "service-account-key-import-service" {
+resource "google_service_account_key" "service-account-key-import-service" {
   service_account_id = google_service_account.service-account-import-service.name
 }
 
 # create key for deployer SA
-  resource "google_service_account_key" "service-account-key-deployer" {
+resource "google_service_account_key" "service-account-key-deployer" {
   service_account_id = google_service_account.service-account-deployer.name
 }
 
@@ -83,7 +33,6 @@ resource "vault_generic_secret" "vault-account-key-deployer" {
   path = "${var.vault_root}/${local.vault_path}/deployer.json"
   data_json = "${base64decode(google_service_account_key.service-account-key-deployer.private_key)}"
 }
-
 
 # Refactoring:
 # the previous six resources (2x google_service_account, 2x google_service_account_key, 2x vault_generic_secret)
@@ -117,6 +66,62 @@ moved {
 moved {
   from = module.import-service-project.vault_generic_secret.app_account_key[1]
   to   = vault_generic_secret.vault-account-key-deployer
+}
+
+module "import-service-project" {
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-0.0.3-tf-0.12"
+
+  project_name = local.import_service_google_project
+  folder_id = var.import_service_google_project_folder_id
+  billing_account_id = var.billing_account_id
+  apis_to_enable = [
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "appengine.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "pubsub.googleapis.com",
+    "storage-component.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sqladmin.googleapis.com",
+    "cloudscheduler.googleapis.com"
+  ]
+
+  roles_to_grant_by_email_and_type = [{
+    email = local.terraform_sa_email
+    role = "roles/iam.serviceAccountTokenCreator"
+    id_type = local.terraform_sa_email_is_sa ? "serviceAccount" : "user"
+  }]
+
+  service_accounts_to_grant_by_name_and_project = [{
+    sa_role = "roles/pubsub.admin"
+    sa_name = "import-service"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/iam.serviceAccountTokenCreator"
+    sa_name = "import-service"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/appengine.deployer"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/appengine.serviceAdmin"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/cloudbuild.builds.builder"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  },{
+    sa_role = "roles/cloudscheduler.admin"
+    sa_name = "deployer"
+    sa_project = "" // defaults to the created project
+  }]
+
+  providers = {
+    google.target = google.target
+    vault = vault
+  }
 }
 
 locals {
