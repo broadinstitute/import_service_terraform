@@ -1,22 +1,22 @@
 terraform {
   required_providers {
     google = {
-      source = "registry.terraform.io/hashicorp/google"
+      source = "hashicorp/google"
     }
     google-beta = {
-      source = "registry.terraform.io/hashicorp/google-beta"
+      source = "hashicorp/google-beta"
     }
     http = {
-      source = "registry.terraform.io/hashicorp/http"
+      source = "hashicorp/http"
     }
     null = {
-      source = "registry.terraform.io/hashicorp/null"
+      source = "hashicorp/null"
     }
     random = {
-      source = "registry.terraform.io/hashicorp/random"
+      source = "hashicorp/random"
     }
     vault = {
-      source = "registry.terraform.io/hashicorp/vault"
+      source = "hashicorp/vault"
     }
   }
   required_version = ">= 0.13"
