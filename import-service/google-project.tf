@@ -56,11 +56,6 @@ module "import-service-project" {
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   }]
-
-  providers = {
-    google.target = google.target
-    vault = vault
-  }
 }
 
 locals {
