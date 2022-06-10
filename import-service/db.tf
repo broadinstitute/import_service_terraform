@@ -8,7 +8,9 @@ resource "random_id" "mysql-root-password" {
 
 module "mysql" {
   source        = "github.com/broadinstitute/terraform-shared.git//terraform-modules/cloudsql-mysql?ref=da_api-services-1.0.0"
-
+  providers = {
+    google.target = google
+  }
   project       = module.import-service-project.project_name
   cloudsql_name = "import-service-db"
   cloudsql_database_name = "isvc"

@@ -1,6 +1,8 @@
 module "import-service-project" {
   source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=da_api-services-1.0.0"
-
+  providers = {
+    google.target = google
+  }
   project_name = local.import_service_google_project
   folder_id = var.import_service_google_project_folder_id
   billing_account_id = var.billing_account_id
