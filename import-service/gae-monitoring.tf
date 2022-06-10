@@ -1,5 +1,5 @@
 module "gae_monitoring" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/stackdriver/gae-monitoring?ref=gae-monitoring-0.0.2-tf-0.12"
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/stackdriver/gae-monitoring?ref=da_api-services-1.0.0"
   service_name     = "importservice-${var.env}"
   gae_host_project = var.import_service_google_project
 }
