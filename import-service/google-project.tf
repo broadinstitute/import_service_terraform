@@ -1,5 +1,5 @@
 module "import-service-project" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=da_api-services-1.0.0"
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
   providers = {
     google.target = google
   }

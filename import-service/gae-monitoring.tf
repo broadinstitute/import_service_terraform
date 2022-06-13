@@ -1,5 +1,5 @@
 module "gae_monitoring" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/stackdriver/gae-monitoring?ref=da_api-services-1.0.0"
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/stackdriver/gae-monitoring?ref=gae-monitoring-1.0.0"
   providers = {
     google.target = google
   }

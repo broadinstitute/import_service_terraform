@@ -7,7 +7,7 @@ resource "random_id" "mysql-root-password" {
 }
 
 module "mysql" {
-  source        = "github.com/broadinstitute/terraform-shared.git//terraform-modules/cloudsql-mysql?ref=da_api-services-1.0.0"
+  source        = "github.com/broadinstitute/terraform-shared.git//terraform-modules/cloudsql-mysql?ref=cloudsql-mysql-1.0.0"
   providers = {
     google.target = google
   }
