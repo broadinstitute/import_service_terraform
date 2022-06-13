@@ -1,3 +1,72 @@
+# create import-service SA
+resource "google_service_account" "service-account-import-service" {
+  account_id   = "import-service"
+  display_name   = "import-service"
+  # project     should default
+}
+
+# create deployer SA
+resource "google_service_account" "service-account-deployer" {
+  account_id   = "deployer"
+  display_name   = "deployer"
+  # project     should default
+}
+
+# create key for import-service SA
+resource "google_service_account_key" "service-account-key-import-service" {
+  service_account_id = google_service_account.service-account-import-service.name
+}
+
+# create key for deployer SA
+resource "google_service_account_key" "service-account-key-deployer" {
+  service_account_id = google_service_account.service-account-deployer.name
+}
+
+# save import-service key to Vault
+resource "vault_generic_secret" "vault-account-key-import-service" {
+  path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
+  data_json = "${base64decode(google_service_account_key.service-account-key-import-service.private_key)}"
+}
+
+# save deployer key to Vault
+resource "vault_generic_secret" "vault-account-key-deployer" {
+  path = "${var.vault_root}/${local.vault_path}/deployer.json"
+  data_json = "${base64decode(google_service_account_key.service-account-key-deployer.private_key)}"
+}
+# Refactoring:
+# the previous six resources (2x google_service_account, 2x google_service_account_key, 2x vault_generic_secret)
+# were previously handled by the "service_accounts_to_create_with_keys" helper in 
+# terraform-shared.git//terraform-modules/google-project.
+#
+# I am making them explicit here inside import_service_terraform and bypassing service_accounts_to_create_with_key
+# to support a future change in which we'll be changing/removing some of those resources. Changes/removals
+# are difficult when using service_accounts_to_create_with_key because service_accounts_to_create_with_key relies
+# on arrays; it is hard to pop specific resources out of those arrays.
+moved {
+  from = module.import-service-project.google_service_account.service-accounts-with-keys[0]
+  to   = google_service_account.service-account-import-service
+}
+moved {
+  from = module.import-service-project.google_service_account.service-accounts-with-keys[1]
+  to   = google_service_account.service-account-deployer
+}
+moved {
+  from = module.import-service-project.google_service_account_key.service-accounts-with-keys[0]
+  to   = google_service_account_key.service-account-key-import-service
+}
+moved {
+  from = module.import-service-project.google_service_account_key.service-accounts-with-keys[1]
+  to   = google_service_account_key.service-account-key-deployer
+}
+moved {
+  from = module.import-service-project.vault_generic_secret.app_account_key[0]
+  to   = vault_generic_secret.vault-account-key-import-service
+}
+moved {
+  from = module.import-service-project.vault_generic_secret.app_account_key[1]
+  to   = vault_generic_secret.vault-account-key-deployer
+}
+
 module "import-service-project" {
   source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
   providers = {
@@ -16,15 +85,6 @@ module "import-service-project" {
     "iamcredentials.googleapis.com",
     "sqladmin.googleapis.com",
     "cloudscheduler.googleapis.com"
-  ]
-  service_accounts_to_create_with_keys = [
-    {
-      sa_name = "import-service"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-    },{
-      sa_name = "deployer"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
-    }
   ]
 
   roles_to_grant_by_email_and_type = [{
