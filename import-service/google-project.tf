@@ -34,7 +34,7 @@ module "import-service-project" {
   }]
 
   service_accounts_to_grant_by_name_and_project = [{
-    sa_role = "roles/pubsub.admin"
+    sa_role = "roles/pubsub.editor"
     sa_name = "import-service"
     sa_project = "" // defaults to the created project
   },{
