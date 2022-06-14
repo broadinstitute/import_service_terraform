@@ -1,3 +1,15 @@
+# Custom IAM role to be used by the deployer SA. This custom role allows creating/updating cloud scheduler
+# jobs during App Engine deployment via cron.yaml.
+resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role" {
+  role_id     = "appEngineScheduleCreator"
+  title       = "App Engine Schedule Creator"
+  description = "Allows creation of Cloud Scheduler schedules during App Engine deployment"
+  permissions = ["cloudscheduler.jobs.create", "cloudscheduler.jobs.delete", "cloudscheduler.jobs.enable",
+                  "cloudscheduler.jobs.fullView", "cloudscheduler.jobs.get", "cloudscheduler.jobs.list",
+                  "cloudscheduler.jobs.update", "cloudscheduler.locations.get", "cloudscheduler.locations.list"]
+}
+
+
 module "import-service-project" {
   source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
   providers = {
@@ -54,7 +66,7 @@ module "import-service-project" {
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
-    sa_role = "roles/cloudscheduler.admin"
+    sa_role = "roles/appEngineScheduleCreator"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   }]
