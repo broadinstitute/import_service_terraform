@@ -66,7 +66,8 @@ module "import-service-project" {
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
-    sa_role = "roles/appEngineScheduleCreator"
+    # Note that custom roles must be of the format [projects|organizations]/{parent-name}/roles/{role-name}.
+    sa_role = "projects/${module.import-service-project.project_name}/roles/${google_project_iam_custom_role.cloud-scheduler-appengine-custom-role.role_id}"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   }]
