@@ -1,6 +1,7 @@
 # Custom IAM role to be used by the deployer SA. This custom role allows creating/updating cloud scheduler
 # jobs during App Engine deployment via cron.yaml.
 resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role" {
+  project     = local.import_service_google_project
   role_id     = "appEngineDeploymentEnabler"
   title       = "App Engine Deployment Enabler"
   description = "Additional permissions needed to deploy and enable new App Engine versions. Allows creation of Cloud Scheduler schedules and routing of traffic to the new version."
