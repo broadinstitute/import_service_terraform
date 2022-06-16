@@ -1,3 +1,15 @@
+# Custom IAM role to be used by the deployer SA. This custom role allows creating/updating cloud scheduler
+# jobs during App Engine deployment via cron.yaml.
+resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role" {
+  role_id     = "appEngineDeploymentEnabler"
+  title       = "App Engine Deployment Enabler"
+  description = "Additional permissions needed to deploy and enable new App Engine versions. Allows creation of Cloud Scheduler schedules and routing of traffic to the new version."
+  permissions = ["appengine.services.update", "appengine.versions.update",
+                  "cloudscheduler.jobs.create", "cloudscheduler.jobs.delete", "cloudscheduler.jobs.enable",
+                  "cloudscheduler.jobs.fullView", "cloudscheduler.jobs.get", "cloudscheduler.jobs.list",
+                  "cloudscheduler.jobs.update", "cloudscheduler.locations.get", "cloudscheduler.locations.list"]
+}
+
 module "import-service-project" {
   source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
   providers = {
@@ -34,7 +46,7 @@ module "import-service-project" {
   }]
 
   service_accounts_to_grant_by_name_and_project = [{
-    sa_role = "roles/pubsub.admin"
+    sa_role = "roles/pubsub.editor"
     sa_name = "import-service"
     sa_project = "" // defaults to the created project
   },{
@@ -46,15 +58,12 @@ module "import-service-project" {
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
-    sa_role = "roles/appengine.serviceAdmin"
-    sa_name = "deployer"
-    sa_project = "" // defaults to the created project
-  },{
     sa_role = "roles/cloudbuild.builds.builder"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   },{
-    sa_role = "roles/cloudscheduler.admin"
+    # Note that custom roles must be of the format [projects|organizations]/{parent-name}/roles/{role-name}.
+    sa_role = "projects/${module.import-service-project.project_name}/roles/${google_project_iam_custom_role.cloud-scheduler-appengine-custom-role.role_id}"
     sa_name = "deployer"
     sa_project = "" // defaults to the created project
   }]
