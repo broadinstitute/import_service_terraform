@@ -19,3 +19,4 @@ jobs:
           directory: import-service-local/
           framework: terraform
           quiet: true
+          soft_fail: true
