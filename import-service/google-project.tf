@@ -28,7 +28,8 @@ module "import-service-project" {
     "storage-component.googleapis.com",
     "iamcredentials.googleapis.com",
     "sqladmin.googleapis.com",
-    "cloudscheduler.googleapis.com"
+    "cloudscheduler.googleapis.com",
+    "containerscanning.googleapis.com"
   ]
   service_accounts_to_create_with_keys = [
     {
