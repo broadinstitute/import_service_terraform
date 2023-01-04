@@ -32,22 +32,24 @@ resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role
     }
   }
 
+  // TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
   // create import-service SA
-  resource "google_service_account" "sa_import-service" {
-    account_id   = "import-service"
-    display_name = "import-service"
-    project      = local.import_service_google_project
-  }
+  # resource "google_service_account" "sa_import-service" {
+  #   account_id   = "import-service"
+  #   display_name = "import-service"
+  #   project      = local.import_service_google_project
+  # }
 
+  // TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
   // create key for import-service SA, pointing at rotation policy
   // ** only create the key in qa and dev ** since the key is only needed for BEEs
-  resource "google_service_account_key" "sa_key_import-service" {
-    count = var.env == "qa" || var.env == "dev" ? 1 : 0
-    service_account_id = "import-service"
-    keepers = {
-      rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
-    }
-  }
+  # resource "google_service_account_key" "sa_key_import-service" {
+  #   count = var.env == "qa" || var.env == "dev" ? 1 : 0
+  #   service_account_id = "import-service"
+  #   keepers = {
+  #     rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
+  #   }
+  # }
 
   // N.B we save the keys for deployer and import-service SAs to Vault in vault.tf, not here
 
@@ -70,6 +72,14 @@ module "import-service-project" {
     "sqladmin.googleapis.com",
     "cloudscheduler.googleapis.com",
     "containerscanning.googleapis.com"
+  ]
+
+  // TODO: delete when ready to handle the import-service SA outside of terraform-modules
+  service_accounts_to_create_with_keys = [
+    {
+      sa_name = "import-service"
+      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
+    }
   ]
 
   roles_to_grant_by_email_and_type = [{

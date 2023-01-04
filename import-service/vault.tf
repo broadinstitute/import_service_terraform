@@ -45,9 +45,10 @@ resource "vault_generic_secret" "sa_key_deployer" {
   data_json = base64decode(google_service_account_key.sa_key_deployer.private_key)
 }
 
+// TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
 // ** this SA key only exists in qa and dev ** since the key is only needed for BEEs
-resource "vault_generic_secret" "sa_key_import-service" {
-  count = var.env == "qa" || var.env == "dev" ? 1 : 0
-  path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-  data_json = base64decode(google_service_account_key.sa_key_deployer.private_key)
-}
+# resource "vault_generic_secret" "sa_key_import-service" {
+#   count = var.env == "qa" || var.env == "dev" ? 1 : 0
+#   path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
+#   data_json = base64decode(google_service_account_key.sa_key_deployer.private_key)
+# }
