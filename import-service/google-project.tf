@@ -11,28 +11,7 @@ resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role
                   "cloudscheduler.jobs.update", "cloudscheduler.locations.get", "cloudscheduler.locations.list"]
 }
 
-module "import-service-project" {
-  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
-  providers = {
-    google.target = google
-  }
-  project_name = local.import_service_google_project
-  folder_id = var.import_service_google_project_folder_id
-  billing_account_id = var.billing_account_id
-  apis_to_enable = [
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-    "appengine.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "pubsub.googleapis.com",
-    "storage-component.googleapis.com",
-    "iamcredentials.googleapis.com",
-    "sqladmin.googleapis.com",
-    "cloudscheduler.googleapis.com",
-    "containerscanning.googleapis.com"
-  ]
-
-  # key-rotation policy for service accounts
+# key-rotation policy for service accounts
   # note this requires the terraform to be run regularly
   resource "time_rotating" "sa_key_rotation_policy" {
     rotation_days = 75 // compliance requirement: 90 days
@@ -71,6 +50,27 @@ module "import-service-project" {
   }
 
   // N.B we save the keys for deployer and import-service SAs to Vault in vault.tf, not here
+
+module "import-service-project" {
+  source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
+  providers = {
+    google.target = google
+  }
+  project_name = local.import_service_google_project
+  folder_id = var.import_service_google_project_folder_id
+  billing_account_id = var.billing_account_id
+  apis_to_enable = [
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "appengine.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "pubsub.googleapis.com",
+    "storage-component.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sqladmin.googleapis.com",
+    "cloudscheduler.googleapis.com",
+    "containerscanning.googleapis.com"
+  ]
 
   roles_to_grant_by_email_and_type = [{
     email = local.terraform_sa_email
