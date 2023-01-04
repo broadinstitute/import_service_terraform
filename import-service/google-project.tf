@@ -35,7 +35,7 @@ module "import-service-project" {
   # key-rotation policy for service accounts
   # note this requires the terraform to be run regularly
   resource "time_rotating" "sa_key_rotation_policy" {
-    rotation_days = 30
+    rotation_days = 75 // compliance requirement: 90 days
   }
 
   // create deployer SA
