@@ -31,15 +31,46 @@ module "import-service-project" {
     "cloudscheduler.googleapis.com",
     "containerscanning.googleapis.com"
   ]
-  service_accounts_to_create_with_keys = [
-    {
-      sa_name = "import-service"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-    },{
-      sa_name = "deployer"
-      key_vault_path = "${var.vault_root}/${local.vault_path}/deployer.json"
+
+  # key-rotation policy for service accounts
+  # note this requires the terraform to be run regularly
+  resource "time_rotating" "sa_key_rotation_policy" {
+    rotation_days = 30
+  }
+
+  // create deployer SA
+  resource "google_service_account" "sa_deployer" {
+    account_id   = "deployer"
+    display_name = "deployer"
+    project      = local.import_service_google_project
+  }
+
+  // create key for deployer SA, pointing at rotation policy
+  resource "google_service_account_key" "sa_key_deployer" {
+    service_account_id = "deployer"
+    keepers = {
+      rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
     }
-  ]
+  }
+
+  // create import-service SA
+  resource "google_service_account" "sa_import-service" {
+    account_id   = "import-service"
+    display_name = "import-service"
+    project      = local.import_service_google_project
+  }
+
+  // create key for import-service SA, pointing at rotation policy
+  // ** only create the key in qa and dev ** since the key is only needed for BEEs
+  resource "google_service_account_key" "sa_key_import-service" {
+    count = var.env == "qa" || var.env == "dev" ? 1 : 0
+    service_account_id = "import-service"
+    keepers = {
+      rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
+    }
+  }
+
+  // N.B we save the keys for deployer and import-service SAs to Vault in vault.tf, not here
 
   roles_to_grant_by_email_and_type = [{
     email = local.terraform_sa_email
