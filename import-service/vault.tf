@@ -50,5 +50,5 @@ resource "vault_generic_secret" "sa_key_deployer" {
 # resource "vault_generic_secret" "sa_key_import-service" {
 #   count = var.env == "qa" || var.env == "dev" ? 1 : 0
 #   path = "${var.vault_root}/${local.vault_path}/import-service-account.json"
-#   data_json = base64decode(google_service_account_key.sa_key_deployer.private_key)
+#   data_json = base64decode(google_service_account_key.sa_key_import-service.private_key)
 # }
