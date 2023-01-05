@@ -27,7 +27,7 @@ resource "google_service_account" "sa_deployer" {
 
 # create key for deployer SA, pointing at rotation policy
 resource "google_service_account_key" "sa_key_deployer" {
-  service_account_id = "deployer"
+  service_account_id = google_service_account.sa_deployer.name
   keepers = {
     rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
   }
@@ -47,7 +47,7 @@ resource "google_service_account_key" "sa_key_deployer" {
 # ** only create the key in qa and dev ** since the key is only needed for BEEs
 # resource "google_service_account_key" "sa_key_import-service" {
 #   count = var.env == "qa" || var.env == "dev" ? 1 : 0
-#   service_account_id = "import-service"
+#   service_account_id = google_service_account.sa_import-service.name
 #   keepers = {
 #     rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
 #   }
