@@ -12,46 +12,48 @@ resource "google_project_iam_custom_role" "cloud-scheduler-appengine-custom-role
 }
 
 # key-rotation policy for service accounts
-  # note this requires the terraform to be run regularly
-  resource "time_rotating" "sa_key_rotation_policy" {
-    rotation_days = 75 // compliance requirement: 90 days
+# note this requires the terraform to be run regularly
+resource "time_rotating" "sa_key_rotation_policy" {
+  rotation_days = 75 # compliance requirement: 90 days
+}
+
+# create deployer SA
+resource "google_service_account" "sa_deployer" {
+  account_id   = "deployer"
+  display_name = "deployer"
+  description  = "Used to deploy code to App Engine"
+  project      = local.import_service_google_project
+}
+
+# create key for deployer SA, pointing at rotation policy
+resource "google_service_account_key" "sa_key_deployer" {
+  service_account_id = "deployer"
+  keepers = {
+    rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
   }
+}
 
-  // create deployer SA
-  resource "google_service_account" "sa_deployer" {
-    account_id   = "deployer"
-    display_name = "deployer"
-    project      = local.import_service_google_project
-  }
+# TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
+# create import-service SA
+# resource "google_service_account" "sa_import-service" {
+#   account_id   = "import-service"
+#   display_name = "import-service"
+#   description  = "Used within the Import Service GAE app and by BEEs to run the app"
+#   project      = local.import_service_google_project
+# }
 
-  // create key for deployer SA, pointing at rotation policy
-  resource "google_service_account_key" "sa_key_deployer" {
-    service_account_id = "deployer"
-    keepers = {
-      rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
-    }
-  }
+# TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
+# create key for import-service SA, pointing at rotation policy
+# ** only create the key in qa and dev ** since the key is only needed for BEEs
+# resource "google_service_account_key" "sa_key_import-service" {
+#   count = var.env == "qa" || var.env == "dev" ? 1 : 0
+#   service_account_id = "import-service"
+#   keepers = {
+#     rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
+#   }
+# }
 
-  // TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
-  // create import-service SA
-  # resource "google_service_account" "sa_import-service" {
-  #   account_id   = "import-service"
-  #   display_name = "import-service"
-  #   project      = local.import_service_google_project
-  # }
-
-  // TODO: uncomment when ready to handle the import-service SA outside of terraform-modules
-  // create key for import-service SA, pointing at rotation policy
-  // ** only create the key in qa and dev ** since the key is only needed for BEEs
-  # resource "google_service_account_key" "sa_key_import-service" {
-  #   count = var.env == "qa" || var.env == "dev" ? 1 : 0
-  #   service_account_id = "import-service"
-  #   keepers = {
-  #     rotation_time = time_rotating.sa_key_rotation_policy.rotation_rfc3339
-  #   }
-  # }
-
-  // N.B we save the keys for deployer and import-service SAs to Vault in vault.tf, not here
+# N.B we save the keys for deployer and import-service SAs to Vault in vault.tf, not here
 
 module "import-service-project" {
   source = "github.com/broadinstitute/terraform-shared.git//terraform-modules/google-project?ref=google-project-1.0.0"
