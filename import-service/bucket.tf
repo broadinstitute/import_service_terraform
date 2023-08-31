@@ -5,7 +5,7 @@ resource "google_storage_bucket" "batchupsert_bucket" {
   location = "US"
   lifecycle_rule {
     condition {
-      age = 90
+      age = 14
     }
     action {
       type = "Delete"
