@@ -22,6 +22,7 @@ variable "terra_google_project" {}
 
 locals {
   rawls_import_pubsub_topic = "rawls-async-import-topic-${var.env}"
+  cwds_service_account = "cwds-${var.env}@broad-dsde-${var.env}.iam.gserviceaccount.com"
 }
 
 variable "import_service_google_project" {
