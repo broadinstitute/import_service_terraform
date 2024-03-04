@@ -49,3 +49,11 @@ resource "google_pubsub_topic_iam_member" "importservice_publish_to_rawls" {
   role = "roles/pubsub.publisher"
   member = "serviceAccount:${local.import_service_sa_email}"
 }
+
+# cWDS can publish to that topic, too
+resource "google_pubsub_topic_iam_member" "cwds_publish_to_rawls" {
+  project = var.terra_google_project
+  topic = local.rawls_import_pubsub_topic
+  role = "roles/pubsub.publisher"
+  member = "serviceAccount:${local.cwds_service_account}"
+}
