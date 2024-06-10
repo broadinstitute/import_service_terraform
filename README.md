@@ -1,3 +1,10 @@
+| :warning: WARNING           |
+|:----------------------------|
+| Import Service is obsolete and superseded by [cWDS](https://github.com/DataBiosphere/terra-workspace-data-service). |
+
+-----
+
+
 # import_service_terraform
 Terraform for import service
 
